@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two-Stack Expression Evaluator</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f5f7fb;color:#1f2937}
+main{max-width:1100px;margin:30px auto;padding:0 20px}
+h1{margin-bottom:6px}
+.controls,.panel{background:white;border:1px solid #d8dee9;border-radius:14px;padding:16px;margin-bottom:18px}
+input{width:100%;padding:12px;font-size:20px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:10px}
+.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button{padding:10px 14px;border:0;border-radius:9px;background:#3157d5;color:white;font-weight:700;cursor:pointer}
+button.secondary{background:#e8ecf5;color:#1f2937}
+button:disabled{opacity:.45;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.expression{display:flex;gap:4px;flex-wrap:wrap;font-family:monospace;font-size:24px;background:#f8faff;border:1px solid #d8dee9;border-radius:10px;padding:12px;min-height:44px}
+.token{padding:4px 6px;border-radius:6px}
+.token.current{background:#3157d5;color:white}
+.token.done{opacity:.4}
+.stacks{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.stackbox{border:1px solid #d8dee9;border-radius:10px;padding:12px}
+.stack{min-height:220px;border:2px solid #cbd5e1;border-top:0;padding:8px;display:flex;flex-direction:column-reverse;gap:6px}
+.item{padding:8px;text-align:center;border-radius:7px;font-family:monospace;font-weight:700}
+.num{background:#e8f7ef;color:#0b7a53}
+.op{background:#fff1e6;color:#a04b00}
+.status{margin-top:12px;padding:12px;border-radius:10px;background:#e9efff;min-height:44px}
+.operation{font-family:monospace;font-size:20px;background:#111827;color:white;padding:14px;border-radius:10px;min-height:90px}
+.result{font-size:40px;font-weight:800}
+ol{line-height:1.6}
+@media(max-width:800px){.grid,.stacks{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>Two-Stack Expression Evaluator</h1>
+<p>Supports +, -, *, /, parentheses, and unary + / −. Evaluation runs in Python via a two-stack algorithm.</p>
+
+<div class="controls">
+  <input id="expr" value="-2 - 1">
+  <div class="buttons">
+    <button id="load">Load Expression</button>
+    <button id="prev" class="secondary">← Previous</button>
+    <button id="next">Next Step →</button>
+    <button id="play" class="secondary">▶ Play</button>
+    <button id="reset" class="secondary">Reset</button>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="panel">
+    <h3>Expression</h3>
+    <div id="exprView" class="expression"></div>
+    <div id="status" class="status"></div>
+
+    <div class="stacks">
+      <div class="stackbox">
+        <h3>Numbers Stack</h3>
+        <div id="numbers" class="stack"></div>
+      </div>
+      <div class="stackbox">
+        <h3>Operators Stack</h3>
+        <div id="operators" class="stack"></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <h3>Current Operation</h3>
+      <div id="operation" class="operation"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Result</h3>
+      <div id="result" class="result">Not finished</div>
+    </div>
+
+    <div class="panel">
+      <h3>Rules</h3>
+      <ol>
+        <li>Push numbers onto the numbers stack.</li>
+        <li>Push <code>(</code> onto the operators stack.</li>
+        <li>If <code>+</code> or <code>-</code> appears where an operand is expected, treat it as a unary operator.</li>
+        <li>Unary <code>+</code> and unary <code>-</code> have higher precedence than <code>*</code> and <code>/</code>.</li>
+        <li>Before pushing a binary operator, apply operators of higher or equal precedence.</li>
+        <li>For <code>)</code>, apply operators until the matching <code>(</code> is reached.</li>
+        <li>At the end, apply all remaining operators.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<script>
+/* UI / visualization only — arithmetic evaluation runs in Python (see evaluator.py). */
+const $ = id => document.getElementById(id);
+let tokens=[], states=[], index=0, timer=null;
+
+function shown(op){ return op==='u-' ? 'unary −' : op==='u+' ? 'unary +' : op; }
+
+function format(n){
+  if(typeof n !== 'number' || Number.isNaN(n)) return String(n);
+  return Number.isInteger(n) ? String(n) : String(Number(n.toFixed(10)));
+}
+
+function renderTokens(){
+  $('exprView').innerHTML='';
+  tokens.forEach((t,i)=>{
+    const span=document.createElement('span');
+    span.className='token';
+    span.dataset.index=i;
+    span.textContent=t.display;
+    $('exprView').appendChild(span);
+  });
+}
+
+function renderStack(el, values, kind){
+  el.innerHTML='';
+  values.forEach(v=>{
+    const d=document.createElement('div');
+    d.className='item '+(kind==='num'?'num':'op');
+    d.textContent=kind==='num' ? format(v) : shown(v);
+    el.appendChild(d);
+  });
+}
+
+function render(){
+  if(!states.length) return;
+  const s=states[index];
+  renderStack($('numbers'),s.numbers,'num');
+  renderStack($('operators'),s.operators,'op');
+
+  document.querySelectorAll('.token').forEach(el=>{
+    const i=Number(el.dataset.index);
+    el.classList.toggle('current',i===s.tokenIndex && i<tokens.length);
+    el.classList.toggle('done',i<s.tokenIndex);
+  });
+
+  $('status').textContent=s.message;
+  $('operation').textContent=s.operation;
+  $('result').textContent=s.finished ? format(s.result) : 'Not finished';
+
+  $('prev').disabled=index===0;
+  $('next').disabled=index===states.length-1;
+  $('play').disabled=index===states.length-1;
+}
+
+function showError(message){
+  tokens=[];
+  states=[];
+  index=0;
+  $('exprView').textContent=$('expr').value;
+  $('numbers').innerHTML='';
+  $('operators').innerHTML='';
+  $('status').textContent='Error: '+message;
+  $('operation').textContent='Cannot evaluate expression.';
+  $('result').textContent='Invalid expression';
+  $('prev').disabled=true;
+  $('next').disabled=true;
+  $('play').disabled=true;
+}
+
+function stop(){
+  if(timer) clearTimeout(timer);
+  timer=null;
+  $('play').textContent='▶ Play';
+}
+
+async function load(){
+  stop();
+  $('status').textContent='Evaluating with Python two-stack algorithm…';
+  $('operation').textContent='Waiting for /api/trace…';
+  try{
+    const response=await fetch('/api/trace',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({expression:$('expr').value})
+    });
+    const data=await response.json();
+    if(!response.ok || !data.ok){
+      throw new Error(data.error || 'Evaluation failed');
+    }
+    tokens=data.tokens;
+    states=data.states;
+    index=0;
+    renderTokens();
+    render();
+  }catch(e){
+    const msg=e && e.message ? e.message : String(e);
+    const hint=msg.includes('Failed to fetch')
+      ? 'Could not reach the Python server. Run: python3 app.py'
+      : msg;
+    showError(hint);
+  }
+}
+
+$('load').onclick=load;
+$('prev').onclick=()=>{stop(); if(index>0){index--;render();}};
+$('next').onclick=()=>{stop(); if(index<states.length-1){index++;render();}};
+$('reset').onclick=()=>{stop(); if(states.length){index=0; render();}};
+$('play').onclick=()=>{
+  if(!states.length) return;
+  if(timer){ stop(); return; }
+  $('play').textContent='⏸ Pause';
+  const step=()=>{
+    if(index>=states.length-1){ stop(); return; }
+    index++; render();
+    timer=setTimeout(step,700);
+  };
+  step();
+};
+$('expr').addEventListener('keydown',e=>{if(e.key==='Enter')load();});
+
+load();
+</script>
+</main>
+</body>
+</html>

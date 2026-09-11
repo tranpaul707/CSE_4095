@@ -1,0 +1,2 @@
+# Optional dependency for: python benford.py <sequence> <n> --plot
+matplotlib>=3.7

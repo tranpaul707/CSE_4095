@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Card 24</title>
+  <style>
+    :root {
+      --felt: #1b5e3b;
+      --felt-dark: #13422a;
+      --cream: #f7f1e3;
+      --ink: #1a1a1a;
+      --muted: #5c6b5e;
+      --red: #c0392b;
+      --black: #1c1c1c;
+      --gold: #d4a017;
+      --card-w: 110px;
+      --card-h: 154px;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      color: var(--cream);
+      background:
+        radial-gradient(ellipse at top, #247a4a 0%, var(--felt) 45%, var(--felt-dark) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 2.5rem;
+    }
+
+    h1 {
+      margin: 0 0 0.35rem;
+      font-size: clamp(1.75rem, 4vw, 2.4rem);
+      letter-spacing: 0.04em;
+      font-weight: 700;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    }
+
+    .subtitle {
+      margin: 0 0 1.5rem;
+      color: rgba(247, 241, 227, 0.85);
+      font-size: 0.95rem;
+      text-align: center;
+      max-width: 28rem;
+    }
+
+    .table {
+      width: min(640px, 100%);
+      background: rgba(0, 0, 0, 0.18);
+      border: 2px solid rgba(212, 160, 23, 0.35);
+      border-radius: 20px;
+      padding: 1.4rem 1.2rem 1.5rem;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .hand {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.85rem;
+      min-height: var(--card-h);
+      margin-bottom: 1.25rem;
+    }
+
+    .playing-card {
+      width: var(--card-w);
+      height: var(--card-h);
+      background: linear-gradient(160deg, #fffef8 0%, #f3ebe0 100%);
+      border-radius: 10px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+      border: 1px solid #d8d0c4;
+      padding: 0.55rem 0.6rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: var(--black);
+      user-select: none;
+      animation: dealIn 0.35s ease;
+    }
+
+    .playing-card.red { color: var(--red); }
+    .playing-card.black { color: var(--black); }
+
+    .playing-card .corner {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.05;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .playing-card .corner.bottom {
+      align-self: flex-end;
+      transform: rotate(180deg);
+    }
+
+    .playing-card .center-suit {
+      font-size: 2.4rem;
+      text-align: center;
+      line-height: 1;
+    }
+
+    @keyframes dealIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.96); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+
+    #expression {
+      width: 100%;
+      padding: 0.75rem 0.9rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--ink);
+      font-size: 1.05rem;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    #expression:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 0.65rem 1.15rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.12s ease, background 0.15s ease;
+    }
+
+    button:hover:not(:disabled) { transform: translateY(-1px); }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #checkBtn {
+      background: var(--gold);
+      color: #1a1200;
+    }
+
+    #solveBtn {
+      background: #e8e0d0;
+      color: #1a1a1a;
+    }
+
+    #newBtn {
+      background: #0f3d28;
+      color: var(--cream);
+      border: 1px solid rgba(212, 160, 23, 0.5);
+    }
+
+    #status {
+      min-height: 4.5rem;
+      margin-top: 0.35rem;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.22);
+      font-size: 0.98rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    #status.ok { border-left: 4px solid #6dcf8a; }
+    #status.bad { border-left: 4px solid #e07474; }
+    #status.info { border-left: 4px solid var(--gold); }
+    #status.neutral { border-left: 4px solid transparent; }
+
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      background: rgba(19, 66, 42, 0.88);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.85rem;
+      z-index: 5;
+    }
+
+    .loading-overlay.visible { display: flex; }
+
+    .spinner {
+      width: 42px;
+      height: 42px;
+      border: 3px solid rgba(247, 241, 227, 0.25);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hint {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      opacity: 0.75;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      :root {
+        --card-w: 78px;
+        --card-h: 112px;
+      }
+      .playing-card .center-suit { font-size: 1.7rem; }
+      .playing-card .corner { font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Card 24</h1>
+  <p class="subtitle">
+    Use all four cards exactly once with +, −, ×, ÷ and parentheses to make 24.
+  </p>
+
+  <div class="table" id="table">
+    <div class="loading-overlay" id="loading" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <div>Generating cards…</div>
+    </div>
+
+    <div class="hand" id="hand" aria-label="Your cards"></div>
+
+    <div class="controls">
+      <label for="expression">Your expression</label>
+      <input
+        id="expression"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="e.g. 6 / (1 - 3 / 4)"
+      />
+      <div class="buttons">
+        <button type="button" id="checkBtn">Check Expression</button>
+        <button type="button" id="solveBtn">Show Solution</button>
+        <button type="button" id="newBtn">New Cards</button>
+      </div>
+      <div id="status" class="neutral" role="status"></div>
+    </div>
+  </div>
+
+  <p class="hint">Self-contained offline game — no server required.</p>
+
+  <script>
+(function () {
+  "use strict";
+
+  // =========================================================================
+  // Exact rational arithmetic (mirrors Python fractions.Fraction)
+  // =========================================================================
+  function gcd(a, b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+    while (b) {
+      var t = b;
+      b = a % b;
+      a = t;
+    }
+    return a || 1;
+  }
+
+  function Fraction(n, d) {
+    if (d === undefined) d = 1;
+    if (d === 0) throw new Error("Zero denominator");
+    if (d < 0) {
+      n = -n;
+      d = -d;
+    }
+    var g = gcd(n, d);
+    this.n = n / g;
+    this.d = d / g;
+  }
+
+  Fraction.prototype.add = function (o) {
+    return new Fraction(this.n * o.d + o.n * this.d, this.d * o.d);
+  };
+  Fraction.prototype.sub = function (o) {
+    return new Fraction(this.n * o.d - o.n * this.d, this.d * o.d);
+  };
+  Fraction.prototype.mul = function (o) {
+    return new Fraction(this.n * o.n, this.d * o.d);
+  };
+  Fraction.prototype.div = function (o) {
+    if (o.n === 0) return null;
+    return new Fraction(this.n * o.d, this.d * o.n);
+  };
+  Fraction.prototype.equals = function (o) {
+    return this.n === o.n && this.d === o.d;
+  };
+  Fraction.prototype.isZero = function () {
+    return this.n === 0;
+  };
+  Fraction.prototype.toString = function () {
+    return this.d === 1 ? String(this.n) : this.n + "/" + this.d;
+  };
+
+  var TARGET = new Fraction(24);
+
+  // =========================================================================
+  // Cards / deck
+  // =========================================================================
+  var SUITS = ["♠", "♥", "♦", "♣"];
+  var RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+  var RANK_VALUES = {
+    A: 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7,
+    "8": 8, "9": 9, "10": 10, J: 11, Q: 12, K: 13
+  };
+
+  function makeDeck() {
+    var deck = [];
+    for (var s = 0; s < SUITS.length; s++) {
+      for (var r = 0; r < RANKS.length; r++) {
+        deck.push({ rank: RANKS[r], suit: SUITS[s], value: RANK_VALUES[RANKS[r]] });
+      }
+    }
+    return deck;
+  }
+
+  function dealFour() {
+    var deck = makeDeck();
+    for (var i = deck.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = deck[i];
+      deck[i] = deck[j];
+      deck[j] = tmp;
+    }
+    return deck.slice(0, 4);
+  }
+
+  function cardValues(cards) {
+    return cards.map(function (c) { return c.value; });
+  }
+
+  function isRed(suit) {
+    return suit === "♥" || suit === "♦";
+  }
+
+  // =========================================================================
+  // Binary-expression-tree solver (independent JS port of the Card 24 algorithm)
+  // =========================================================================
+  var OPS = ["+", "-", "*", "/"];
+
+  function combine(a, b, op) {
+    if (op === "+") return a.add(b);
+    if (op === "-") return a.sub(b);
+    if (op === "*") return a.mul(b);
+    if (op === "/") return a.div(b);
+    return null;
+  }
+
+  function formatExpr(left, op, right) {
+    return "(" + left + " " + op + " " + right + ")";
+  }
+
+  function keyOf(items) {
+    return items
+      .map(function (it) { return it.value.n + "/" + it.value.d; })
+      .sort()
+      .join("|");
+  }
+
+  function findSolution(values) {
+    var nodes = values.map(function (v) {
+      return { value: new Fraction(v), expr: String(v) };
+    });
+    var seen = Object.create(null);
+
+    function search(items) {
+      if (items.length === 1) {
+        if (items[0].value.equals(TARGET)) {
+          var e = items[0].expr;
+          if (e.charAt(0) === "(" && e.charAt(e.length - 1) === ")") {
+            return e.slice(1, -1);
+          }
+          return e;
+        }
+        return null;
+      }
+
+      var k = keyOf(items);
+      if (seen[k]) return null;
+      seen[k] = true;
+
+      var n = items.length;
+      for (var i = 0; i < n; i++) {
+        for (var j = 0; j < n; j++) {
+          if (i === j) continue;
+          var a = items[i];
+          var b = items[j];
+          var rest = [];
+          for (var t = 0; t < n; t++) {
+            if (t !== i && t !== j) rest.push(items[t]);
+          }
+          for (var o = 0; o < OPS.length; o++) {
+            var op = OPS[o];
+            var combined = combine(a.value, b.value, op);
+            if (combined === null) continue;
+            var next = rest.concat([{
+              value: combined,
+              expr: formatExpr(a.expr, op, b.expr)
+            }]);
+            var found = search(next);
+            if (found !== null) return found;
+          }
+        }
+      }
+      return null;
+    }
+
+    return search(nodes);
+  }
+
+  function dealSolvableHand() {
+    // Silent regeneration until a solvable hand is found.
+    while (true) {
+      var cards = dealFour();
+      var sol = findSolution(cardValues(cards));
+      if (sol !== null) {
+        return { cards: cards, solution: sol };
+      }
+    }
+  }
+
+  // =========================================================================
+  // Expression validation + Fraction evaluator
+  // =========================================================================
+  function ExpressionError(message) {
+    this.message = message;
+  }
+
+  function tokenize(expression) {
+    var text = expression.trim();
+    if (!text) throw new ExpressionError("Empty expression.");
+    var compact = text.replace(/\s+/g, "");
+    for (var i = 0; i < compact.length; i++) {
+      var ch = compact.charAt(i);
+      if (!/[0-9+\-*/()]/.test(ch)) {
+        throw new ExpressionError(
+          "Invalid characters. Use only numbers, +, -, *, /, parentheses, and spaces."
+        );
+      }
+    }
+    var tokens = compact.match(/\d+|[+\-*/()]/g);
+    if (!tokens || tokens.join("") !== compact) {
+      throw new ExpressionError("Could not parse expression.");
+    }
+    return tokens;
+  }
+
+  function extractNumbers(tokens) {
+    var nums = [];
+    for (var i = 0; i < tokens.length; i++) {
+      if (/^\d+$/.test(tokens[i])) nums.push(parseInt(tokens[i], 10));
+    }
+    return nums;
+  }
+
+  function countersEqual(a, b) {
+    if (a.length !== b.length) return false;
+    var ca = a.slice().sort(function (x, y) { return x - y; });
+    var cb = b.slice().sort(function (x, y) { return x - y; });
+    for (var i = 0; i < ca.length; i++) {
+      if (ca[i] !== cb[i]) return false;
+    }
+    return true;
+  }
+
+  function checkMultiset(numbers, cardVals) {
+    if (!countersEqual(numbers, cardVals)) {
+      throw new ExpressionError(
+        "You must use all four card values exactly once (cards are " +
+        cardVals.slice().sort(function (a, b) { return a - b; }).join(", ") + ")."
+      );
+    }
+  }
+
+  function isOp(tok) {
+    return tok === "+" || tok === "-" || tok === "*" || tok === "/";
+  }
+
+  function checkStructure(tokens) {
+    var depth = 0;
+    var prev = null;
+    for (var i = 0; i < tokens.length; i++) {
+      var tok = tokens[i];
+      if (tok === "(") {
+        depth++;
+        if (prev !== null && (/^\d+$/.test(prev) || prev === ")")) {
+          throw new ExpressionError("Implicit multiplication is not allowed.");
+        }
+      } else if (tok === ")") {
+        depth--;
+        if (depth < 0) throw new ExpressionError("Unbalanced parentheses.");
+        if (prev === "(") throw new ExpressionError("Empty parentheses.");
+        if (isOp(prev)) throw new ExpressionError("Operator before closing parenthesis.");
+      } else if (isOp(tok)) {
+        if (prev === null || isOp(prev) || prev === "(") {
+          throw new ExpressionError("Unexpected operator.");
+        }
+      } else if (/^\d+$/.test(tok)) {
+        if (prev !== null && (/^\d+$/.test(prev) || prev === ")")) {
+          throw new ExpressionError("Missing operator between values.");
+        }
+      }
+      prev = tok;
+    }
+    if (depth !== 0) throw new ExpressionError("Unbalanced parentheses.");
+    if (isOp(prev)) throw new ExpressionError("Expression ends with an operator.");
+  }
+
+  function parseFraction(tokens) {
+    var pos = 0;
+
+    function peek() {
+      return pos < tokens.length ? tokens[pos] : null;
+    }
+
+    function consume(expected) {
+      if (pos >= tokens.length) throw new ExpressionError("Unexpected end of expression.");
+      var tok = tokens[pos];
+      if (expected !== undefined && tok !== expected) {
+        throw new ExpressionError("Expected '" + expected + "'.");
+      }
+      pos++;
+      return tok;
+    }
+
+    function parseExpr() {
+      var value = parseTerm();
+      while (peek() === "+" || peek() === "-") {
+        var op = consume();
+        var rhs = parseTerm();
+        value = op === "+" ? value.add(rhs) : value.sub(rhs);
+      }
+      return value;
+    }
+
+    function parseTerm() {
+      var value = parseFactor();
+      while (peek() === "*" || peek() === "/") {
+        var op = consume();
+        var rhs = parseFactor();
+        if (op === "*") {
+          value = value.mul(rhs);
+        } else {
+          var q = value.div(rhs);
+          if (q === null) throw new ExpressionError("Division by zero.");
+          value = q;
+        }
+      }
+      return value;
+    }
+
+    function parseFactor() {
+      var tok = peek();
+      if (tok === null) throw new ExpressionError("Unexpected end of expression.");
+      if (tok === "(") {
+        consume("(");
+        var value = parseExpr();
+        consume(")");
+        return value;
+      }
+      if (/^\d+$/.test(tok)) {
+        consume();
+        return new Fraction(parseInt(tok, 10));
+      }
+      throw new ExpressionError("Unexpected token '" + tok + "'.");
+    }
+
+    var result = parseExpr();
+    if (pos !== tokens.length) throw new ExpressionError("Unexpected trailing tokens.");
+    return result;
+  }
+
+  function validateAndEvaluate(expression, cardVals) {
+    var tokens = tokenize(expression);
+    checkStructure(tokens);
+    var numbers = extractNumbers(tokens);
+    checkMultiset(numbers, cardVals);
+    return parseFraction(tokens);
+  }
+
+  // =========================================================================
+  // UI / game state
+  // =========================================================================
+  var STATE = { LOADING: "LOADING", PLAYING: "PLAYING", SOLVED: "SOLVED" };
+
+  var state = STATE.LOADING;
+  var currentCards = [];
+  var currentSolution = null;
+
+  var elHand = document.getElementById("hand");
+  var elExpr = document.getElementById("expression");
+  var elCheck = document.getElementById("checkBtn");
+  var elSolve = document.getElementById("solveBtn");
+  var elNew = document.getElementById("newBtn");
+  var elStatus = document.getElementById("status");
+  var elLoading = document.getElementById("loading");
+
+  function setStatus(text, kind) {
+    elStatus.textContent = text;
+    elStatus.className = kind || "neutral";
+  }
+
+  function renderCards(cards) {
+    elHand.innerHTML = "";
+    cards.forEach(function (card) {
+      var div = document.createElement("div");
+      div.className = "playing-card " + (isRed(card.suit) ? "red" : "black");
+      div.innerHTML =
+        '<div class="corner"><span>' + card.rank + "</span><span>" + card.suit + "</span></div>" +
+        '<div class="center-suit">' + card.suit + "</div>" +
+        '<div class="corner bottom"><span>' + card.rank + "</span><span>" + card.suit + "</span></div>";
+      elHand.appendChild(div);
+    });
+  }
+
+  function applyState(next) {
+    state = next;
+    var loading = state === STATE.LOADING;
+    var playing = state === STATE.PLAYING;
+    var solved = state === STATE.SOLVED;
+
+    elLoading.classList.toggle("visible", loading);
+    elExpr.disabled = !playing;
+    elCheck.disabled = !playing;
+    elSolve.disabled = !playing;
+    elNew.disabled = loading;
+  }
+
+  function startNewHand() {
+    applyState(STATE.LOADING);
+    setStatus("Generating a solvable hand…", "info");
+    elExpr.value = "";
+
+    // Yield so the loading spinner can paint before the (usually tiny) search.
+    setTimeout(function () {
+      var hand = dealSolvableHand();
+      currentCards = hand.cards;
+      currentSolution = hand.solution;
+      renderCards(currentCards);
+      applyState(STATE.PLAYING);
+      setStatus("Make 24 using all four cards.", "neutral");
+      elExpr.focus();
+    }, 40);
+  }
+
+  function onCheck() {
+    if (state !== STATE.PLAYING) return;
+    var text = elExpr.value;
+    var vals = cardValues(currentCards);
+    try {
+      var result = validateAndEvaluate(text, vals);
+    } catch (err) {
+      var msg = err && err.message ? err.message : "Invalid expression.";
+      setStatus("✗ Invalid Expression\n" + msg, "bad");
+      return;
+    }
+
+    if (result.equals(TARGET)) {
+      setStatus(
+        "Expression Value: 24\n\n✓ Correct!\nYou made 24!",
+        "ok"
+      );
+      applyState(STATE.SOLVED);
+    } else {
+      setStatus(
+        "Expression Value: " + result.toString() +
+        "\n\n✗ Incorrect\nYour expression evaluates to " + result.toString() + ".",
+        "bad"
+      );
+    }
+  }
+
+  function onSolve() {
+    if (state !== STATE.PLAYING) return;
+    setStatus(
+      "Solution\n\n" + currentSolution + " = 24\n\nThis hand has been solved.",
+      "info"
+    );
+    applyState(STATE.SOLVED);
+  }
+
+  elCheck.addEventListener("click", onCheck);
+  elSolve.addEventListener("click", onSolve);
+  elNew.addEventListener("click", startNewHand);
+  elExpr.addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+      onCheck();
+    }
+  });
+
+  // Initial deal
+  startNewHand();
+})();
+  </script>
+</body>
+</html>

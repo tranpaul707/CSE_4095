@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>8-Puzzle A* Visualizer</title>
+  <style>
+    :root {
+      --bg: #e8eef4;
+      --bg-accent: #d5e0ea;
+      --surface: #f7fafc;
+      --ink: #1c2834;
+      --muted: #5a6b7a;
+      --tile: #2a4a6a;
+      --tile-face: #f0f5fa;
+      --tile-edge: #9eb0c2;
+      --blank: #c5d0db;
+      --accent: #1f6f8b;
+      --accent-hover: #185a70;
+      --danger: #9b2c2c;
+      --ok: #276749;
+      --select: #c05621;
+      --select-bg: #fff4e6;
+      --shadow: 0 10px 28px rgba(28, 40, 52, 0.12);
+      --radius: 12px;
+      --font: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --mono: "SF Mono", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 20% 0%, #f4f8fb 0%, transparent 50%),
+        linear-gradient(160deg, var(--bg) 0%, var(--bg-accent) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 2.5rem;
+    }
+
+    h1 {
+      margin: 0 0 0.25rem;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin: 0 0 1.25rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+      max-width: 40rem;
+      line-height: 1.45;
+    }
+
+    .app {
+      width: min(920px, 100%);
+      background: var(--surface);
+      border: 1px solid #c8d4e0;
+      border-radius: var(--radius);
+      padding: 1.25rem 1.2rem 1.5rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(240px, 300px) 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 720px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .board-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .panel-title {
+      margin: 0;
+      width: 100%;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .board {
+      --board-pad: 10px;
+      --board-gap: 6px;
+      --slide-ms: 400ms;
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--board-gap);
+      width: min(260px, 100%);
+      aspect-ratio: 1;
+      padding: var(--board-pad);
+      background: var(--tile);
+      border-radius: 10px;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .slot {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      background: var(--blank);
+      border: 1px dashed #a8b6c4;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .tile {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: clamp(1.25rem, 4vw, 1.7rem);
+      font-weight: 700;
+      font-family: var(--mono);
+      user-select: none;
+      pointer-events: none;
+      z-index: 1;
+      background: linear-gradient(160deg, #ffffff 0%, var(--tile-face) 100%);
+      color: var(--ink);
+      border: 1px solid var(--tile-edge);
+      box-shadow: 0 2px 0 #7f93a8;
+      will-change: transform;
+      transition: transform var(--slide-ms) cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .tile.no-animate { transition: none; }
+    .tile.sliding {
+      z-index: 2;
+      box-shadow: 0 6px 14px rgba(28, 40, 52, 0.28);
+    }
+
+    .scores {
+      width: 100%;
+      background: #eef3f8;
+      border: 1px solid #cdd8e4;
+      border-radius: 8px;
+      padding: 0.7rem 0.85rem;
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+
+    .scores .formula {
+      margin-top: 0.35rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .explain {
+      background: #fff;
+      border: 1px solid #cdd8e4;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 0.75rem 0.9rem;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      min-height: 3.2rem;
+    }
+
+    .explain.tie { border-left-color: var(--select); }
+
+    .side-panels {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      min-width: 0;
+    }
+
+    .list-box {
+      border: 1px solid #cdd8e4;
+      border-radius: 8px;
+      background: #fff;
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 0.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .list-box:empty::after {
+      content: attr(data-empty);
+      display: block;
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .open-item, .cand-item {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      background: #f4f7fa;
+      font-size: 0.8rem;
+    }
+
+    .open-item.selected {
+      background: var(--select-bg);
+      border-color: var(--select);
+      box-shadow: inset 3px 0 0 var(--select);
+    }
+
+    .open-item .mark {
+      grid-column: 1 / -1;
+      font-weight: 700;
+      color: var(--select);
+      font-size: 0.78rem;
+      margin-top: -0.15rem;
+    }
+
+    .metrics {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .cand-item {
+      grid-template-columns: 48px 1fr;
+    }
+
+    .cand-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      min-width: 0;
+    }
+
+    .cand-move { font-size: 0.78rem; color: var(--muted); }
+    .cand-move strong { color: var(--ink); }
+
+    .mini {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      width: 42px;
+      padding: 2px;
+      background: var(--tile);
+      border-radius: 3px;
+    }
+
+    .mini span {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.55rem;
+      font-family: var(--mono);
+      font-weight: 700;
+      border-radius: 1px;
+      background: var(--tile-face);
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .mini span.blank {
+      background: var(--blank);
+      color: transparent;
+    }
+
+    .step-info {
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .step-info .label { color: var(--muted); }
+
+    .phase-badge {
+      display: inline-block;
+      margin-left: 0.35rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: #dcecf3;
+      color: var(--accent);
+    }
+
+    .phase-badge.solution { background: #d8f3e0; color: var(--ok); }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    button {
+      font: inherit;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.55rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      transition: background 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover:not(:disabled) { background: var(--accent-hover); }
+
+    button.secondary {
+      background: #fff;
+      color: var(--ink);
+      border-color: #b7c5d4;
+    }
+
+    button.secondary:hover:not(:disabled) { background: #eef3f8; }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .speed {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .speed input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .speed-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .stats, .input-section, .path-section {
+      background: #eef3f8;
+      border: 1px solid #cdd8e4;
+      border-radius: 8px;
+      padding: 0.75rem 0.9rem;
+    }
+
+    .stats {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      line-height: 1.6;
+      background: #eef3f8;
+    }
+
+    .stats h2,
+    .input-section h2,
+    .path-section h2,
+    .side-panels h2 {
+      margin: 0 0 0.45rem;
+      font-family: var(--font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .path-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      background: var(--surface);
+    }
+
+    .path-hint {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .path-list {
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid #cdd8e4;
+      border-radius: 8px;
+      background: #fff;
+      padding: 0.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .path-list:empty::after {
+      content: "Solve a puzzle to see the optimal path.";
+      display: block;
+      padding: 0.85rem 0.6rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .path-item {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      width: 100%;
+      padding: 0.4rem 0.5rem;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: #f4f7fa;
+      color: var(--ink);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .path-item:hover:not(:disabled) {
+      background: #e8eef4;
+      border-color: #b7c5d4;
+    }
+
+    .path-item.current {
+      background: #dcecf3;
+      border-color: var(--accent);
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    .path-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      min-width: 0;
+    }
+
+    .path-meta .step-num {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .path-meta .step-move {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .path-meta .step-move strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      background: var(--surface);
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.4rem;
+      width: min(220px, 100%);
+      margin: 0 auto;
+    }
+
+    .input-grid input {
+      width: 100%;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      padding: 0.45rem 0.2rem;
+      border: 1px solid #b7c5d4;
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .input-grid input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    .status {
+      min-height: 1.35rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .status.error { color: var(--danger); font-weight: 600; }
+    .status.ok { color: var(--ok); font-weight: 600; }
+
+    .flow {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <h1>8-Puzzle A* Visualizer</h1>
+  <p class="subtitle">
+    Watch A* choose states by priority
+    <strong>f(n)&nbsp;=&nbsp;g(n)&nbsp;+&nbsp;h(n)</strong>
+    (Manhattan distance). Step through the search to see why each state is selected.
+  </p>
+
+  <div class="app">
+    <p class="flow">
+      Candidates → g(n) → h(n) → f(n) = g(n) + h(n) → compare priorities → select smallest f(n)
+    </p>
+
+    <div class="main-grid">
+      <div class="board-panel">
+        <h2 class="panel-title">Current State</h2>
+        <div id="board" class="board" aria-label="8-puzzle board"></div>
+        <div class="scores" id="scores" aria-live="polite">
+          <div>g(n) = —</div>
+          <div>h(n) = —</div>
+          <div class="formula">f(n) = g(n) + h(n) = —</div>
+        </div>
+      </div>
+
+      <div class="side-panels">
+        <div>
+          <h2>Why this state?</h2>
+          <div id="explain" class="explain">Press Solve to run A* and step through its decisions.</div>
+        </div>
+
+        <div>
+          <h2>Open List (priority queue)</h2>
+          <div id="openList" class="list-box" data-empty="Open list appears after Solve." aria-label="Open list"></div>
+        </div>
+
+        <div>
+          <h2>Candidate Neighbors</h2>
+          <div id="candList" class="list-box" data-empty="Neighbors appear when a state is expanded." aria-label="Candidate states"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-info" aria-live="polite">
+      <div>
+        <span class="label">Progress:</span>
+        <span id="stepLabel">Step 0 / 0</span>
+        <span id="phaseBadge" class="phase-badge" hidden></span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button type="button" id="btnSolve">Solve</button>
+      <button type="button" id="btnPrev" class="secondary" disabled>Previous</button>
+      <button type="button" id="btnPlay" class="secondary" disabled>Play</button>
+      <button type="button" id="btnNext" class="secondary" disabled>Next</button>
+      <button type="button" id="btnReset" class="secondary" disabled>Reset</button>
+    </div>
+
+    <div class="speed">
+      <div class="speed-row">
+        <span>Animation Speed</span>
+        <span id="speedLabel">400 ms</span>
+      </div>
+      <input type="range" id="speedSlider" min="100" max="1500" step="50" value="400"
+             aria-label="Step delay in milliseconds" />
+      <div class="speed-row" style="font-size: 0.8rem;">
+        <span>Faster</span>
+        <span>Slower</span>
+      </div>
+    </div>
+
+    <div class="stats">
+      <h2>A* Statistics</h2>
+      <div>Number of moves: <span id="statMoves">—</span></div>
+      <div>States expanded: <span id="statExpanded">—</span></div>
+      <div>States discovered: <span id="statDiscovered">—</span></div>
+      <div>Time taken: <span id="statTime">—</span></div>
+    </div>
+
+    <div class="path-section">
+      <h2>Optimal Path</h2>
+      <p class="path-hint">Final A* solution. Click a step to jump to the solution phase.</p>
+      <div id="pathList" class="path-list" aria-label="Optimal solution path"></div>
+    </div>
+
+    <div class="input-section">
+      <h2>Puzzle Input</h2>
+      <div id="inputGrid" class="input-grid" aria-label="Puzzle configuration"></div>
+      <p style="margin: 0; font-size: 0.8rem; color: var(--muted); text-align: center;">
+        Enter digits 0–8 once each. Blank is <strong>0</strong> (shown as empty).
+      </p>
+    </div>
+
+    <div id="status" class="status" role="status"></div>
+  </div>
+
+  <script>
+    /* =====================================================================
+       A* solver + Manhattan heuristic (ported from astar.py)
+       Kept separate from visualization / UI logic.
+       ===================================================================== */
+    (function () {
+      "use strict";
+
+      const DEFAULT_START = Object.freeze([8, 7, 6, 5, 4, 3, 2, 1, 0]);
+      const GOAL = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 0]);
+      const MOVES = Object.freeze([
+        [-1, 0, "up"],
+        [1, 0, "down"],
+        [0, -1, "left"],
+        [0, 1, "right"],
+      ]);
+      // Cap detailed search snapshots so long searches stay interactive.
+      const DETAIL_LIMIT = 50;
+      const OPEN_DISPLAY = 12;
+
+      function stateKey(state) {
+        return state.join(",");
+      }
+
+      function parseKey(key) {
+        return key.split(",").map(Number);
+      }
+
+      function blankIndex(state) {
+        return state.indexOf(0);
+      }
+
+      function goalPositions(goal) {
+        const map = {};
+        for (let i = 0; i < goal.length; i++) {
+          const tile = goal[i];
+          if (tile !== 0) map[tile] = [Math.floor(i / 3), i % 3];
+        }
+        return map;
+      }
+
+      function manhattanDistance(state, goalPos) {
+        let total = 0;
+        for (let i = 0; i < state.length; i++) {
+          const tile = state[i];
+          if (tile === 0) continue;
+          const row = Math.floor(i / 3);
+          const col = i % 3;
+          const [gr, gc] = goalPos[tile];
+          total += Math.abs(row - gr) + Math.abs(col - gc);
+        }
+        return total;
+      }
+
+      function neighborsWithMoves(state) {
+        const zero = blankIndex(state);
+        const row = Math.floor(zero / 3);
+        const col = zero % 3;
+        const result = [];
+
+        for (const [dRow, dCol, dir] of MOVES) {
+          const newRow = row + dRow;
+          const newCol = col + dCol;
+          if (newRow < 0 || newRow > 2 || newCol < 0 || newCol > 2) continue;
+          const swapWith = newRow * 3 + newCol;
+          const tiles = state.slice();
+          const movedTile = tiles[swapWith];
+          tiles[zero] = movedTile;
+          tiles[swapWith] = 0;
+          result.push({
+            state: tiles,
+            move: { tile: movedTile, dir },
+          });
+        }
+        return result;
+      }
+
+      function neighbors(state) {
+        return neighborsWithMoves(state).map((n) => n.state);
+      }
+
+      /** Binary min-heap on [f, tie, g, key]. */
+      function createHeap() {
+        const data = [];
+        function less(i, j) {
+          const a = data[i];
+          const b = data[j];
+          if (a[0] !== b[0]) return a[0] < b[0];
+          if (a[1] !== b[1]) return a[1] < b[1];
+          return a[2] < b[2];
+        }
+        function swap(i, j) {
+          const t = data[i];
+          data[i] = data[j];
+          data[j] = t;
+        }
+        function siftUp(i) {
+          while (i > 0) {
+            const p = (i - 1) >> 1;
+            if (!less(i, p)) break;
+            swap(i, p);
+            i = p;
+          }
+        }
+        function siftDown(i) {
+          const n = data.length;
+          while (true) {
+            let smallest = i;
+            const l = i * 2 + 1;
+            const r = l + 1;
+            if (l < n && less(l, smallest)) smallest = l;
+            if (r < n && less(r, smallest)) smallest = r;
+            if (smallest === i) break;
+            swap(i, smallest);
+            i = smallest;
+          }
+        }
+        return {
+          push(entry) {
+            data.push(entry);
+            siftUp(data.length - 1);
+          },
+          pop() {
+            if (data.length === 0) return undefined;
+            const top = data[0];
+            const last = data.pop();
+            if (data.length > 0) {
+              data[0] = last;
+              siftDown(0);
+            }
+            return top;
+          },
+          get length() { return data.length; },
+          snapshotActive(gScore) {
+            // Non-stale entries only, sorted by priority for display.
+            const active = [];
+            for (const entry of data) {
+              const [f, tie, g, key] = entry;
+              if (g === gScore.get(key)) {
+                active.push({ f, tie, g, key, h: f - g });
+              }
+            }
+            active.sort((a, b) => {
+              if (a.f !== b.f) return a.f - b.f;
+              if (a.tie !== b.tie) return a.tie - b.tie;
+              return a.g - b.g;
+            });
+            return active;
+          },
+        };
+      }
+
+      function cloneOpenDisplay(active, selectedKey) {
+        return active.slice(0, OPEN_DISPLAY).map((e, idx) => ({
+          state: parseKey(e.key),
+          g: e.g,
+          h: e.h,
+          f: e.f,
+          selected: e.key === selectedKey,
+          rank: idx + 1,
+        }));
+      }
+
+      function buildExplanation(selected, openActive) {
+        const sameF = openActive.filter((e) => e.f === selected.f);
+        if (sameF.length > 1) {
+          return {
+            text:
+              `A* selects this state with f(n) = ${selected.f}. ` +
+              `${sameF.length} open states share this smallest priority ` +
+              `(tie broken by insertion order). Selection is based on ` +
+              `f(n) = g(n) + h(n), not h(n) alone.`,
+            tie: true,
+          };
+        }
+        return {
+          text:
+            `A* selects this state because it has the smallest priority: ` +
+            `f(n) = g(n) + h(n) = ${selected.f}.`,
+          tie: false,
+        };
+      }
+
+      function validatePuzzle(values) {
+        if (!Array.isArray(values) || values.length !== 9) {
+          return { ok: false, message: "Puzzle must have exactly nine positions." };
+        }
+        const seen = new Set();
+        for (let i = 0; i < 9; i++) {
+          const v = values[i];
+          if (!Number.isInteger(v) || v < 0 || v > 8) {
+            return { ok: false, message: "Each cell must be an integer from 0 through 8." };
+          }
+          if (seen.has(v)) {
+            return { ok: false, message: "Each value from 0 through 8 may appear only once." };
+          }
+          seen.add(v);
+        }
+        for (let v = 0; v <= 8; v++) {
+          if (!seen.has(v)) {
+            return { ok: false, message: "All values from 0 through 8 must be present." };
+          }
+        }
+        return { ok: true, state: values.slice() };
+      }
+
+      function isSolvable(state) {
+        let inversions = 0;
+        const tiles = state.filter((t) => t !== 0);
+        for (let i = 0; i < tiles.length; i++) {
+          for (let j = i + 1; j < tiles.length; j++) {
+            if (tiles[i] > tiles[j]) inversions += 1;
+          }
+        }
+        return inversions % 2 === 0;
+      }
+
+      function reconstructPath(cameFrom, goal) {
+        const path = [];
+        let currentKey = stateKey(goal);
+        while (currentKey !== null) {
+          path.push(parseKey(currentKey));
+          currentKey = cameFrom.get(currentKey);
+        }
+        path.reverse();
+        return path;
+      }
+
+      /**
+       * Run A* and record visualization snapshots of expansions.
+       * Matches astar.py: f = g + h, stale heap entries skipped.
+       */
+      function runAstarVisual(start, goal) {
+        const t0 = performance.now();
+        const goalPos = goalPositions(goal);
+        const startKey = stateKey(start);
+        const goalKey = stateKey(goal);
+
+        const heap = createHeap();
+        let tie = 0;
+        const g0 = 0;
+        const h0 = manhattanDistance(start, goalPos);
+        heap.push([g0 + h0, tie, g0, startKey]);
+
+        const gScore = new Map([[startKey, 0]]);
+        const cameFrom = new Map([[startKey, null]]);
+        const discovered = new Set([startKey]);
+        let statesExpanded = 0;
+
+        const snapshots = [];
+        let detailCount = 0;
+        let skippedAfterCap = 0;
+
+        while (heap.length > 0) {
+          const entry = heap.pop();
+          const [_f, _tie, g, currentKey] = entry;
+
+          // Stale entry — do not expand or count.
+          if (g > gScore.get(currentKey)) continue;
+
+          const current = parseKey(currentKey);
+          const h = manhattanDistance(current, goalPos);
+          const f = g + h;
+          statesExpanded += 1;
+
+          const openBefore = heap.snapshotActive(gScore);
+          // Include the state we just selected (already popped) at the front.
+          const openWithSelected = [
+            { f, tie: _tie, g, key: currentKey, h },
+            ...openBefore,
+          ];
+
+          let candidates = [];
+          const recordDetail = detailCount < DETAIL_LIMIT;
+
+          if (currentKey === goalKey) {
+            const expl = buildExplanation({ f, g, h }, openWithSelected);
+            if (recordDetail || snapshots.length === 0) {
+              snapshots.push({
+                kind: "search",
+                phase: "goal",
+                state: current.slice(),
+                g, h, f,
+                open: cloneOpenDisplay(openWithSelected, currentKey),
+                openTotal: openWithSelected.length,
+                candidates: [],
+                explanation: expl.text + " Goal reached — this state is the goal.",
+                explanationTie: expl.tie,
+                statesExpanded,
+                statesDiscovered: discovered.size,
+                skippedNote: skippedAfterCap > 0
+                  ? `${skippedAfterCap} later expansions were omitted from the step list for readability; statistics still count the full search.`
+                  : null,
+              });
+              detailCount += 1;
+            } else {
+              snapshots.push({
+                kind: "search",
+                phase: "goal",
+                state: current.slice(),
+                g, h, f,
+                open: cloneOpenDisplay(openWithSelected, currentKey),
+                openTotal: openWithSelected.length,
+                candidates: [],
+                explanation:
+                  `Goal reached after ${statesExpanded} expansions. ` +
+                  (skippedAfterCap
+                    ? `${skippedAfterCap} intermediate expansions were omitted from the step-through.`
+                    : ""),
+                explanationTie: false,
+                statesExpanded,
+                statesDiscovered: discovered.size,
+                skippedNote: null,
+              });
+            }
+
+            const stats = {
+              statesExpanded,
+              statesDiscovered: discovered.size,
+              timeSeconds: (performance.now() - t0) / 1000,
+            };
+            const path = reconstructPath(cameFrom, goal);
+
+            // Append solution-path snapshots for the final walk-through.
+            path.forEach((st, i) => {
+              snapshots.push({
+                kind: "solution",
+                phase: "solution",
+                solutionIndex: i,
+                state: st.slice(),
+                g: i,
+                h: manhattanDistance(st, goalPos),
+                f: i + manhattanDistance(st, goalPos),
+                open: [],
+                openTotal: 0,
+                candidates: [],
+                explanation:
+                  i === 0
+                    ? "Optimal solution path — Step 0 (start)."
+                    : i === path.length - 1
+                      ? `Optimal solution path — Goal (Step ${i}). Number of moves: ${path.length - 1}.`
+                      : `Optimal solution path — Step ${i}.`,
+                explanationTie: false,
+                statesExpanded: stats.statesExpanded,
+                statesDiscovered: stats.statesDiscovered,
+                skippedNote: null,
+              });
+            });
+
+            return { snapshots, path, stats, error: null };
+          }
+
+          // Expand neighbors.
+          const neigh = neighborsWithMoves(current);
+          for (const { state: nxt, move } of neigh) {
+            const nxtKey = stateKey(nxt);
+            const tentativeG = g + 1;
+            const nh = manhattanDistance(nxt, goalPos);
+            const nf = tentativeG + nh;
+            const better = !gScore.has(nxtKey) || tentativeG < gScore.get(nxtKey);
+
+            if (recordDetail) {
+              candidates.push({
+                state: nxt.slice(),
+                move,
+                g: tentativeG,
+                h: nh,
+                f: nf,
+                accepted: better,
+              });
+            }
+
+            if (better) {
+              gScore.set(nxtKey, tentativeG);
+              cameFrom.set(nxtKey, currentKey);
+              if (!discovered.has(nxtKey)) discovered.add(nxtKey);
+              tie += 1;
+              heap.push([nf, tie, tentativeG, nxtKey]);
+            }
+          }
+
+          if (recordDetail) {
+            const expl = buildExplanation({ f, g, h }, openWithSelected);
+            snapshots.push({
+              kind: "search",
+              phase: "expand",
+              state: current.slice(),
+              g, h, f,
+              open: cloneOpenDisplay(openWithSelected, currentKey),
+              openTotal: openWithSelected.length,
+              candidates,
+              explanation: expl.text,
+              explanationTie: expl.tie,
+              statesExpanded,
+              statesDiscovered: discovered.size,
+              skippedNote: null,
+            });
+            detailCount += 1;
+          } else {
+            skippedAfterCap += 1;
+          }
+        }
+
+        return {
+          snapshots: [],
+          path: null,
+          stats: {
+            statesExpanded,
+            statesDiscovered: discovered.size,
+            timeSeconds: (performance.now() - t0) / 1000,
+          },
+          error: "No solution found (search exhausted).",
+        };
+      }
+
+      function solveAstar(start, goal) {
+        const validation = validatePuzzle(start);
+        if (!validation.ok) {
+          return { snapshots: [], path: null, stats: null, error: validation.message };
+        }
+        if (!isSolvable(validation.state)) {
+          return {
+            snapshots: [],
+            path: null,
+            stats: null,
+            error: "This puzzle is unsolvable (odd inversion parity). No solution exists.",
+          };
+        }
+        return runAstarVisual(validation.state, goal);
+      }
+
+      function tileMovedBetween(prev, curr) {
+        if (!prev || !curr) return null;
+        const blankPrev = blankIndex(prev);
+        const moved = curr[blankPrev];
+        return moved === 0 ? null : moved;
+      }
+
+      function describeMove(prev, curr) {
+        if (!prev || !curr) return null;
+        const blankPrev = blankIndex(prev);
+        const blankCurr = blankIndex(curr);
+        const tile = curr[blankPrev];
+        if (!tile) return null;
+        const fromRow = Math.floor(blankCurr / 3);
+        const fromCol = blankCurr % 3;
+        const toRow = Math.floor(blankPrev / 3);
+        const toCol = blankPrev % 3;
+        let dir = null;
+        if (toRow < fromRow) dir = "up";
+        else if (toRow > fromRow) dir = "down";
+        else if (toCol < fromCol) dir = "left";
+        else if (toCol > fromCol) dir = "right";
+        return dir ? { tile, dir } : null;
+      }
+
+      window.PuzzleAStar = {
+        DEFAULT_START,
+        GOAL,
+        solveAstar,
+        tileMovedBetween,
+        describeMove,
+        manhattanDistance,
+        goalPositions,
+      };
+    })();
+  </script>
+
+  <script>
+    /* =====================================================================
+       UI: board, open list, candidates, playback over recorded snapshots
+       ===================================================================== */
+    (function () {
+      "use strict";
+
+      const {
+        DEFAULT_START,
+        GOAL,
+        solveAstar,
+        tileMovedBetween,
+        describeMove,
+      } = window.PuzzleAStar;
+
+      const boardEl = document.getElementById("board");
+      const inputGridEl = document.getElementById("inputGrid");
+      const pathListEl = document.getElementById("pathList");
+      const openListEl = document.getElementById("openList");
+      const candListEl = document.getElementById("candList");
+      const scoresEl = document.getElementById("scores");
+      const explainEl = document.getElementById("explain");
+      const stepLabelEl = document.getElementById("stepLabel");
+      const phaseBadgeEl = document.getElementById("phaseBadge");
+      const statusEl = document.getElementById("status");
+      const speedSlider = document.getElementById("speedSlider");
+      const speedLabel = document.getElementById("speedLabel");
+
+      const btnSolve = document.getElementById("btnSolve");
+      const btnPrev = document.getElementById("btnPrev");
+      const btnPlay = document.getElementById("btnPlay");
+      const btnNext = document.getElementById("btnNext");
+      const btnReset = document.getElementById("btnReset");
+
+      const statMoves = document.getElementById("statMoves");
+      const statExpanded = document.getElementById("statExpanded");
+      const statDiscovered = document.getElementById("statDiscovered");
+      const statTime = document.getElementById("statTime");
+
+      let snapshots = null;
+      let path = null;
+      let stats = null;
+      let stepIndex = 0;
+      let playing = false;
+      let playTimer = null;
+      let animating = false;
+      let displayedState = null;
+
+      for (let i = 0; i < 9; i++) {
+        const slot = document.createElement("div");
+        slot.className = "slot";
+        slot.setAttribute("aria-hidden", "true");
+        boardEl.appendChild(slot);
+      }
+
+      const tileEls = {};
+      for (let v = 1; v <= 8; v++) {
+        const tile = document.createElement("div");
+        tile.className = "tile no-animate";
+        tile.textContent = String(v);
+        tile.dataset.value = String(v);
+        boardEl.appendChild(tile);
+        tileEls[v] = tile;
+      }
+
+      const inputs = [];
+      for (let i = 0; i < 9; i++) {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.inputMode = "numeric";
+        input.maxLength = 1;
+        input.value = String(DEFAULT_START[i]);
+        input.setAttribute("aria-label", `Tile position ${i + 1}`);
+        inputGridEl.appendChild(input);
+        inputs.push(input);
+      }
+
+      function getSlideMs() {
+        return Number(speedSlider.value);
+      }
+
+      function syncSlideDuration() {
+        boardEl.style.setProperty("--slide-ms", `${getSlideMs()}ms`);
+        speedLabel.textContent = `${speedSlider.value} ms`;
+      }
+
+      function layoutMetrics() {
+        const styles = getComputedStyle(boardEl);
+        const pad = parseFloat(styles.paddingLeft) || 10;
+        const gap = parseFloat(styles.gap) || 6;
+        const inner = boardEl.clientWidth - 2 * pad;
+        const cell = (inner - 2 * gap) / 3;
+        return { pad, gap, cell };
+      }
+
+      function positionFor(index) {
+        const { pad, gap, cell } = layoutMetrics();
+        const row = Math.floor(index / 3);
+        const col = index % 3;
+        return {
+          x: pad + col * (cell + gap),
+          y: pad + row * (cell + gap),
+          size: cell,
+        };
+      }
+
+      function renderBoard(state, animate) {
+        const prev = displayedState;
+        let movingValue = null;
+        if (animate && prev) {
+          movingValue = tileMovedBetween(prev, state);
+        }
+
+        const metrics = [];
+        for (let v = 1; v <= 8; v++) {
+          metrics[v] = positionFor(state.indexOf(v));
+        }
+
+        if (movingValue !== null) {
+          const mover = tileEls[movingValue];
+          for (let v = 1; v <= 8; v++) {
+            const tile = tileEls[v];
+            const { x, y, size } = metrics[v];
+            tile.style.width = `${size}px`;
+            tile.style.height = `${size}px`;
+            if (v === movingValue) {
+              tile.classList.add("no-animate");
+              tile.classList.add("sliding");
+            } else {
+              tile.classList.add("no-animate");
+              tile.classList.remove("sliding");
+              tile.style.transform = `translate(${x}px, ${y}px)`;
+            }
+          }
+          void mover.offsetWidth;
+          requestAnimationFrame(() => {
+            mover.classList.remove("no-animate");
+            const { x, y } = metrics[movingValue];
+            mover.style.transform = `translate(${x}px, ${y}px)`;
+          });
+        } else {
+          for (let v = 1; v <= 8; v++) {
+            const tile = tileEls[v];
+            const { x, y, size } = metrics[v];
+            tile.classList.add("no-animate");
+            tile.classList.remove("sliding");
+            tile.style.width = `${size}px`;
+            tile.style.height = `${size}px`;
+            tile.style.transform = `translate(${x}px, ${y}px)`;
+          }
+        }
+
+        displayedState = state.slice();
+      }
+
+      function waitForSlide() {
+        return new Promise((resolve) => {
+          window.setTimeout(resolve, getSlideMs());
+        });
+      }
+
+      function makeMini(state) {
+        const mini = document.createElement("div");
+        mini.className = "mini";
+        mini.setAttribute("aria-hidden", "true");
+        for (let i = 0; i < 9; i++) {
+          const cell = document.createElement("span");
+          const v = state[i];
+          if (v === 0) {
+            cell.className = "blank";
+          } else {
+            cell.textContent = String(v);
+          }
+          mini.appendChild(cell);
+        }
+        return mini;
+      }
+
+      function renderScores(snap) {
+        if (!snap || snap.g == null) {
+          scoresEl.innerHTML =
+            "<div>g(n) = —</div><div>h(n) = —</div>" +
+            '<div class="formula">f(n) = g(n) + h(n) = —</div>';
+          return;
+        }
+        scoresEl.innerHTML =
+          `<div>g(n) = ${snap.g}</div>` +
+          `<div>h(n) = ${snap.h}</div>` +
+          `<div class="formula">f(n) = g(n) + h(n) = ${snap.f}</div>`;
+      }
+
+      function renderExplain(snap) {
+        if (!snap) {
+          explainEl.textContent = "Press Solve to run A* and step through its decisions.";
+          explainEl.classList.remove("tie");
+          return;
+        }
+        let text = snap.explanation || "";
+        if (snap.skippedNote) text += (text ? " " : "") + snap.skippedNote;
+        explainEl.textContent = text;
+        explainEl.classList.toggle("tie", !!snap.explanationTie);
+      }
+
+      function renderOpenList(snap) {
+        openListEl.innerHTML = "";
+        if (!snap || !snap.open || snap.open.length === 0) {
+          if (snap && snap.kind === "solution") {
+            openListEl.setAttribute("data-empty", "Solution phase — open list no longer shown.");
+          }
+          return;
+        }
+        openListEl.removeAttribute("data-empty");
+        snap.open.forEach((item) => {
+          const row = document.createElement("div");
+          row.className = "open-item" + (item.selected ? " selected" : "");
+          row.appendChild(makeMini(item.state));
+          const label = document.createElement("div");
+          label.textContent = item.selected ? "Selected" : `Candidate #${item.rank}`;
+          row.appendChild(label);
+          const metrics = document.createElement("div");
+          metrics.className = "metrics";
+          metrics.textContent = `g=${item.g}  h=${item.h}  f=${item.f}`;
+          row.appendChild(metrics);
+          if (item.selected) {
+            const mark = document.createElement("div");
+            mark.className = "mark";
+            mark.textContent = "← Selected (smallest f(n))";
+            row.appendChild(mark);
+          }
+          openListEl.appendChild(row);
+        });
+        if (snap.openTotal > snap.open.length) {
+          const more = document.createElement("div");
+          more.style.cssText = "padding:0.35rem 0.5rem;font-size:0.78rem;color:var(--muted);";
+          more.textContent = `… and ${snap.openTotal - snap.open.length} more in the open list`;
+          openListEl.appendChild(more);
+        }
+      }
+
+      function renderCandidates(snap) {
+        candListEl.innerHTML = "";
+        if (!snap || !snap.candidates || snap.candidates.length === 0) {
+          if (snap && snap.phase === "goal") {
+            candListEl.setAttribute("data-empty", "Goal state — no further neighbors expanded.");
+          } else if (snap && snap.kind === "solution") {
+            candListEl.setAttribute("data-empty", "Solution phase — candidates not shown.");
+          }
+          return;
+        }
+        candListEl.removeAttribute("data-empty");
+        snap.candidates.forEach((c) => {
+          const row = document.createElement("div");
+          row.className = "cand-item";
+          row.appendChild(makeMini(c.state));
+          const meta = document.createElement("div");
+          meta.className = "cand-meta";
+          const move = document.createElement("div");
+          move.className = "cand-move";
+          move.innerHTML = c.move
+            ? `Tile <strong>${c.move.tile}</strong> → ${c.move.dir}` +
+              (c.accepted ? "" : " <em>(not improved)</em>")
+            : "Neighbor";
+          const metrics = document.createElement("div");
+          metrics.className = "metrics";
+          metrics.textContent = `g=${c.g}  h=${c.h}  f=g+h=${c.f}`;
+          meta.appendChild(move);
+          meta.appendChild(metrics);
+          row.appendChild(meta);
+          candListEl.appendChild(row);
+        });
+      }
+
+      function readInputState() {
+        return inputs.map((el) => {
+          const raw = el.value.trim();
+          if (raw === "") return NaN;
+          return Number(raw);
+        });
+      }
+
+      function setStatus(message, kind) {
+        statusEl.textContent = message || "";
+        statusEl.className = "status" + (kind ? " " + kind : "");
+      }
+
+      function clearStats() {
+        statMoves.textContent = "—";
+        statExpanded.textContent = "—";
+        statDiscovered.textContent = "—";
+        statTime.textContent = "—";
+      }
+
+      function showStats(s, moves) {
+        statMoves.textContent = String(moves);
+        statExpanded.textContent = String(s.statesExpanded);
+        statDiscovered.textContent = String(s.statesDiscovered);
+        statTime.textContent = s.timeSeconds.toFixed(4) + " seconds";
+      }
+
+      function clearPathList() {
+        pathListEl.innerHTML = "";
+      }
+
+      function buildPathList(solutionPath) {
+        clearPathList();
+        if (!solutionPath || solutionPath.length === 0) return;
+
+        solutionPath.forEach((state, i) => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "path-item";
+          item.dataset.sol = String(i);
+
+          const meta = document.createElement("div");
+          meta.className = "path-meta";
+
+          const stepNum = document.createElement("div");
+          stepNum.className = "step-num";
+          stepNum.textContent = i === solutionPath.length - 1 ? `Step ${i} (Goal)` : `Step ${i}`;
+
+          const stepMove = document.createElement("div");
+          stepMove.className = "step-move";
+          if (i === 0) {
+            stepMove.textContent = "Start state";
+          } else {
+            const move = describeMove(solutionPath[i - 1], state);
+            if (move) {
+              stepMove.innerHTML = `Tile <strong>${move.tile}</strong> → ${move.dir}`;
+            } else {
+              stepMove.textContent = "Move";
+            }
+          }
+
+          meta.appendChild(stepNum);
+          meta.appendChild(stepMove);
+          item.appendChild(makeMini(state));
+          item.appendChild(meta);
+
+          item.addEventListener("click", async () => {
+            if (!snapshots || animating) return;
+            stopPlayback();
+            const solIndex = Number(item.dataset.sol);
+            const target = snapshots.findIndex(
+              (s) => s.kind === "solution" && s.solutionIndex === solIndex
+            );
+            if (target >= 0) await goToStep(target, { animate: false });
+          });
+
+          pathListEl.appendChild(item);
+        });
+      }
+
+      function highlightPathStep(snap) {
+        const items = pathListEl.querySelectorAll(".path-item");
+        items.forEach((el) => {
+          const isCurrent =
+            snap &&
+            snap.kind === "solution" &&
+            Number(el.dataset.sol) === snap.solutionIndex;
+          el.classList.toggle("current", isCurrent);
+        });
+      }
+
+      function stopPlayback() {
+        playing = false;
+        if (playTimer !== null) {
+          clearTimeout(playTimer);
+          playTimer = null;
+        }
+        btnPlay.textContent = "Play";
+      }
+
+      function updateStepLabels() {
+        const maxStep = snapshots ? snapshots.length - 1 : 0;
+        const snap = snapshots ? snapshots[stepIndex] : null;
+        stepLabelEl.textContent = `Step ${stepIndex} / ${maxStep}`;
+
+        if (snap && snap.kind === "solution") {
+          phaseBadgeEl.hidden = false;
+          phaseBadgeEl.textContent = "Solution";
+          phaseBadgeEl.className = "phase-badge solution";
+        } else if (snap) {
+          phaseBadgeEl.hidden = false;
+          phaseBadgeEl.textContent = snap.phase === "goal" ? "Goal found" : "Search";
+          phaseBadgeEl.className = "phase-badge";
+        } else {
+          phaseBadgeEl.hidden = true;
+        }
+
+        const has = Array.isArray(snapshots) && snapshots.length > 0;
+        btnPrev.disabled = !has || stepIndex <= 0 || animating || playing;
+        btnNext.disabled = !has || stepIndex >= maxStep || animating || playing;
+        btnPlay.disabled = !has || maxStep === 0;
+        btnReset.disabled = !has || animating;
+
+        highlightPathStep(snap);
+      }
+
+      function applySnapshot(snap, animate) {
+        renderBoard(snap.state, animate);
+        renderScores(snap);
+        renderExplain(snap);
+        renderOpenList(snap);
+        renderCandidates(snap);
+      }
+
+      async function goToStep(index, options) {
+        if (!snapshots) return;
+        const animate = !options || options.animate !== false;
+        const target = Math.max(0, Math.min(index, snapshots.length - 1));
+        const prevSnap = snapshots[stepIndex];
+        const nextSnap = snapshots[target];
+        const adjacent = Math.abs(target - stepIndex) === 1;
+        const shouldAnimate =
+          animate &&
+          adjacent &&
+          prevSnap &&
+          nextSnap &&
+          nextSnap.kind === "solution" &&
+          prevSnap.kind === "solution";
+
+        stepIndex = target;
+        updateStepLabels();
+
+        if (shouldAnimate) {
+          animating = true;
+          updateStepLabels();
+          applySnapshot(nextSnap, true);
+          await waitForSlide();
+          for (let v = 1; v <= 8; v++) tileEls[v].classList.remove("sliding");
+          animating = false;
+          updateStepLabels();
+        } else {
+          applySnapshot(nextSnap, false);
+          updateStepLabels();
+        }
+      }
+
+      function scheduleNextPlayTick() {
+        if (!playing || !snapshots) return;
+        if (stepIndex >= snapshots.length - 1) {
+          stopPlayback();
+          updateStepLabels();
+          return;
+        }
+        playTimer = window.setTimeout(async () => {
+          playTimer = null;
+          if (!playing) return;
+          await goToStep(stepIndex + 1, { animate: true });
+          if (!playing) return;
+          if (stepIndex >= snapshots.length - 1) {
+            stopPlayback();
+            updateStepLabels();
+            setStatus("Playback finished.", "ok");
+            return;
+          }
+          scheduleNextPlayTick();
+        }, getSlideMs());
+      }
+
+      function onSolve() {
+        stopPlayback();
+        animating = false;
+        setStatus("Running A*…");
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            const start = readInputState();
+            const result = solveAstar(start, GOAL.slice());
+
+            if (result.error) {
+              snapshots = null;
+              path = null;
+              stats = null;
+              stepIndex = 0;
+              clearStats();
+              clearPathList();
+              openListEl.innerHTML = "";
+              candListEl.innerHTML = "";
+              renderScores(null);
+              renderExplain(null);
+              const usable = start.every((v) => Number.isInteger(v) && v >= 0 && v <= 8);
+              renderBoard(usable && start.length === 9 ? start : DEFAULT_START.slice(), false);
+              updateStepLabels();
+              setStatus(result.error, "error");
+              btnPrev.disabled = true;
+              btnNext.disabled = true;
+              btnPlay.disabled = true;
+              btnReset.disabled = true;
+              return;
+            }
+
+            snapshots = result.snapshots;
+            path = result.path;
+            stats = result.stats;
+            stepIndex = 0;
+            showStats(stats, path.length - 1);
+            buildPathList(path);
+            applySnapshot(snapshots[0], false);
+            updateStepLabels();
+
+            const searchSteps = snapshots.filter((s) => s.kind === "search").length;
+            setStatus(
+              `A* found a ${path.length - 1}-move solution ` +
+                `(${stats.statesExpanded} expanded). ` +
+                `Stepping through ${searchSteps} search snapshot` +
+                `${searchSteps === 1 ? "" : "s"} then the solution path.`,
+              "ok"
+            );
+          }, 0);
+        });
+      }
+
+      btnSolve.addEventListener("click", () => {
+        if (animating) return;
+        onSolve();
+      });
+
+      btnPrev.addEventListener("click", async () => {
+        if (animating || !snapshots) return;
+        stopPlayback();
+        await goToStep(stepIndex - 1, { animate: true });
+      });
+
+      btnNext.addEventListener("click", async () => {
+        if (animating || !snapshots) return;
+        stopPlayback();
+        await goToStep(stepIndex + 1, { animate: true });
+      });
+
+      btnPlay.addEventListener("click", async () => {
+        if (!snapshots || animating) return;
+        if (playing) {
+          stopPlayback();
+          updateStepLabels();
+          return;
+        }
+        if (stepIndex >= snapshots.length - 1) {
+          await goToStep(0, { animate: false });
+        }
+        playing = true;
+        btnPlay.textContent = "Pause";
+        updateStepLabels();
+        scheduleNextPlayTick();
+      });
+
+      btnReset.addEventListener("click", async () => {
+        if (animating || !snapshots) return;
+        stopPlayback();
+        await goToStep(0, { animate: false });
+        setStatus("Reset to the first search snapshot.");
+      });
+
+      speedSlider.addEventListener("input", () => {
+        syncSlideDuration();
+      });
+
+      window.addEventListener("resize", () => {
+        if (displayedState) renderBoard(displayedState, false);
+      });
+
+      syncSlideDuration();
+      renderBoard(DEFAULT_START.slice(), false);
+      updateStepLabels();
+      setStatus("Press Solve to run A* on the puzzle input.");
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>8-Puzzle BFS Solver</title>
+  <style>
+    :root {
+      --bg: #e8eef4;
+      --bg-accent: #d5e0ea;
+      --surface: #f7fafc;
+      --ink: #1c2834;
+      --muted: #5a6b7a;
+      --tile: #2a4a6a;
+      --tile-face: #f0f5fa;
+      --tile-edge: #9eb0c2;
+      --blank: #c5d0db;
+      --accent: #1f6f8b;
+      --accent-hover: #185a70;
+      --danger: #9b2c2c;
+      --ok: #276749;
+      --shadow: 0 10px 28px rgba(28, 40, 52, 0.12);
+      --radius: 12px;
+      --font: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --mono: "SF Mono", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 20% 0%, #f4f8fb 0%, transparent 50%),
+        linear-gradient(160deg, var(--bg) 0%, var(--bg-accent) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 2.5rem;
+    }
+
+    h1 {
+      margin: 0 0 0.25rem;
+      font-size: clamp(1.6rem, 4vw, 2.1rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin: 0 0 1.35rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+      max-width: 28rem;
+    }
+
+    .app {
+      width: min(420px, 100%);
+      background: var(--surface);
+      border: 1px solid #c8d4e0;
+      border-radius: var(--radius);
+      padding: 1.35rem 1.2rem 1.5rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .board {
+      --board-pad: 10px;
+      --board-gap: 6px;
+      --slide-ms: 500ms;
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--board-gap);
+      width: min(300px, 100%);
+      aspect-ratio: 1;
+      margin: 0 auto;
+      padding: var(--board-pad);
+      background: var(--tile);
+      border-radius: 10px;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .slot {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      background: var(--blank);
+      border: 1px dashed #a8b6c4;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .tile {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: clamp(1.4rem, 5vw, 1.85rem);
+      font-weight: 700;
+      font-family: var(--mono);
+      user-select: none;
+      pointer-events: none;
+      z-index: 1;
+      background: linear-gradient(160deg, #ffffff 0%, var(--tile-face) 100%);
+      color: var(--ink);
+      border: 1px solid var(--tile-edge);
+      box-shadow: 0 2px 0 #7f93a8;
+      will-change: transform;
+      transition: transform var(--slide-ms) cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    .tile.no-animate { transition: none; }
+
+    .tile.sliding {
+      z-index: 2;
+      box-shadow: 0 6px 14px rgba(28, 40, 52, 0.28);
+    }
+
+    .step-info {
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    .step-info .label { color: var(--muted); }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    button {
+      font: inherit;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.55rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      transition: background 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover:not(:disabled) { background: var(--accent-hover); }
+
+    button.secondary {
+      background: #fff;
+      color: var(--ink);
+      border-color: #b7c5d4;
+    }
+
+    button.secondary:hover:not(:disabled) { background: #eef3f8; }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .speed {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .speed input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .speed-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .stats {
+      background: #eef3f8;
+      border: 1px solid #cdd8e4;
+      border-radius: 8px;
+      padding: 0.75rem 0.9rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .stats h2,
+    .input-section h2,
+    .path-section h2 {
+      margin: 0 0 0.45rem;
+      font-family: var(--font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .path-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .path-hint {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .path-list {
+      max-height: 280px;
+      overflow-y: auto;
+      border: 1px solid #cdd8e4;
+      border-radius: 8px;
+      background: #fff;
+      padding: 0.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .path-list:empty::after {
+      content: "Solve a puzzle to see the optimal path.";
+      display: block;
+      padding: 0.85rem 0.6rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .path-item {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      width: 100%;
+      padding: 0.4rem 0.5rem;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: #f4f7fa;
+      color: var(--ink);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+
+    .path-item:hover:not(:disabled) {
+      background: #e8eef4;
+      border-color: #b7c5d4;
+    }
+
+    .path-item.current {
+      background: #dcecf3;
+      border-color: var(--accent);
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    .path-mini {
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      width: 42px;
+      padding: 2px;
+      background: var(--tile);
+      border-radius: 3px;
+    }
+
+    .path-mini span {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.55rem;
+      font-family: var(--mono);
+      font-weight: 700;
+      border-radius: 1px;
+      background: var(--tile-face);
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .path-mini span.blank {
+      background: var(--blank);
+      color: transparent;
+    }
+
+    .path-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      min-width: 0;
+    }
+
+    .path-meta .step-num {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .path-meta .step-move {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .path-meta .step-move strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.4rem;
+      width: min(220px, 100%);
+      margin: 0 auto;
+    }
+
+    .input-grid input {
+      width: 100%;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      padding: 0.45rem 0.2rem;
+      border: 1px solid #b7c5d4;
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .input-grid input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    .status {
+      min-height: 1.35rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .status.error { color: var(--danger); font-weight: 600; }
+    .status.ok { color: var(--ok); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>8-Puzzle BFS Solver</h1>
+  <p class="subtitle">Optimal solutions via breadth-first search. Enter a puzzle, solve, then step through the path.</p>
+
+  <div class="app">
+    <div id="board" class="board" aria-label="8-puzzle board"></div>
+
+    <div class="step-info" aria-live="polite">
+      <div><span class="label">Progress:</span> <span id="stepLabel">Step 0 / 0</span></div>
+      <div><span class="label">Tile moved:</span> <span id="tileMoved">—</span></div>
+    </div>
+
+    <div class="controls">
+      <button type="button" id="btnSolve">Solve</button>
+      <button type="button" id="btnPrev" class="secondary" disabled>Previous</button>
+      <button type="button" id="btnPlay" class="secondary" disabled>Play</button>
+      <button type="button" id="btnNext" class="secondary" disabled>Next</button>
+      <button type="button" id="btnReset" class="secondary" disabled>Reset</button>
+    </div>
+
+    <div class="speed">
+      <div class="speed-row">
+        <span>Animation Speed (tile slide)</span>
+        <span id="speedLabel">500 ms</span>
+      </div>
+      <input type="range" id="speedSlider" min="100" max="1500" step="50" value="500"
+             aria-label="Tile slide duration in milliseconds" />
+      <div class="speed-row" style="font-size: 0.8rem;">
+        <span>Faster</span>
+        <span>Slower</span>
+      </div>
+    </div>
+
+    <div class="stats">
+      <h2>BFS Statistics</h2>
+      <div>Number of moves: <span id="statMoves">—</span></div>
+      <div>States expanded: <span id="statExpanded">—</span></div>
+      <div>States discovered: <span id="statDiscovered">—</span></div>
+      <div>Time taken: <span id="statTime">—</span></div>
+    </div>
+
+    <div class="path-section">
+      <h2>Optimal Path</h2>
+      <p class="path-hint">Every state on the BFS solution. Click a step to jump there.</p>
+      <div id="pathList" class="path-list" aria-label="Optimal solution path"></div>
+    </div>
+
+    <div class="input-section">
+      <h2>Puzzle Input</h2>
+      <div id="inputGrid" class="input-grid" aria-label="Puzzle configuration"></div>
+      <p style="margin: 0; font-size: 0.8rem; color: var(--muted); text-align: center;">
+        Enter digits 0–8 once each. Blank is <strong>0</strong>.
+      </p>
+    </div>
+
+    <div id="status" class="status" role="status"></div>
+  </div>
+
+  <script>
+    /* =====================================================================
+       Solver: puzzle helpers + BFS (ported from bfs.py) + solvability
+       Kept separate from UI / visualization logic below.
+       Self-contained: no external scripts, fonts, or network requests.
+       ===================================================================== */
+    (function () {
+      "use strict";
+
+      const DEFAULT_START = Object.freeze([8, 7, 6, 5, 4, 3, 2, 1, 0]);
+      const GOAL = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 0]);
+      const MOVES = Object.freeze([
+        [-1, 0],
+        [1, 0],
+        [0, -1],
+        [0, 1],
+      ]);
+
+      function stateKey(state) {
+        return state.join(",");
+      }
+
+      function parseKey(key) {
+        return key.split(",").map(Number);
+      }
+
+      function blankIndex(state) {
+        return state.indexOf(0);
+      }
+
+      function neighbors(state) {
+        const zero = blankIndex(state);
+        const row = Math.floor(zero / 3);
+        const col = zero % 3;
+        const result = [];
+
+        for (const [dRow, dCol] of MOVES) {
+          const newRow = row + dRow;
+          const newCol = col + dCol;
+          if (newRow < 0 || newRow > 2 || newCol < 0 || newCol > 2) continue;
+          const swapWith = newRow * 3 + newCol;
+          const tiles = state.slice();
+          tiles[zero] = tiles[swapWith];
+          tiles[swapWith] = 0;
+          result.push(tiles);
+        }
+        return result;
+      }
+
+      function createQueue() {
+        const items = [];
+        let head = 0;
+        return {
+          enqueue(item) { items.push(item); },
+          dequeue() {
+            if (head >= items.length) return undefined;
+            const value = items[head++];
+            if (head > 1024 && head * 2 > items.length) {
+              items.splice(0, head);
+              head = 0;
+            }
+            return value;
+          },
+          get length() { return items.length - head; },
+        };
+      }
+
+      function bfs(start, goal) {
+        const t0 = performance.now();
+        const startKey = stateKey(start);
+        const goalKey = stateKey(goal);
+
+        const frontier = createQueue();
+        frontier.enqueue(startKey);
+
+        const discovered = new Set([startKey]);
+        const cameFrom = new Map([[startKey, null]]);
+        let statesExpanded = 0;
+
+        while (frontier.length > 0) {
+          const currentKey = frontier.dequeue();
+          statesExpanded += 1;
+          const current = parseKey(currentKey);
+
+          if (currentKey === goalKey) {
+            return {
+              cameFrom,
+              stats: {
+                statesExpanded,
+                statesDiscovered: discovered.size,
+                timeSeconds: (performance.now() - t0) / 1000,
+              },
+            };
+          }
+
+          for (const nxt of neighbors(current)) {
+            const nxtKey = stateKey(nxt);
+            if (discovered.has(nxtKey)) continue;
+            discovered.add(nxtKey);
+            cameFrom.set(nxtKey, currentKey);
+            frontier.enqueue(nxtKey);
+          }
+        }
+
+        return {
+          cameFrom: null,
+          stats: {
+            statesExpanded,
+            statesDiscovered: discovered.size,
+            timeSeconds: (performance.now() - t0) / 1000,
+          },
+        };
+      }
+
+      function reconstructPath(cameFrom, goal) {
+        const path = [];
+        let currentKey = stateKey(goal);
+        while (currentKey !== null) {
+          path.push(parseKey(currentKey));
+          currentKey = cameFrom.get(currentKey);
+        }
+        path.reverse();
+        return path;
+      }
+
+      function validatePuzzle(values) {
+        if (!Array.isArray(values) || values.length !== 9) {
+          return { ok: false, message: "Puzzle must have exactly nine positions." };
+        }
+        const seen = new Set();
+        for (let i = 0; i < 9; i++) {
+          const v = values[i];
+          if (!Number.isInteger(v) || v < 0 || v > 8) {
+            return { ok: false, message: "Each cell must be an integer from 0 through 8." };
+          }
+          if (seen.has(v)) {
+            return { ok: false, message: "Each value from 0 through 8 may appear only once." };
+          }
+          seen.add(v);
+        }
+        for (let v = 0; v <= 8; v++) {
+          if (!seen.has(v)) {
+            return { ok: false, message: "All values from 0 through 8 must be present." };
+          }
+        }
+        return { ok: true, state: values.slice() };
+      }
+
+      function isSolvable(state) {
+        let inversions = 0;
+        const tiles = state.filter((t) => t !== 0);
+        for (let i = 0; i < tiles.length; i++) {
+          for (let j = i + 1; j < tiles.length; j++) {
+            if (tiles[i] > tiles[j]) inversions += 1;
+          }
+        }
+        return inversions % 2 === 0;
+      }
+
+      function solveBfs(start, goal) {
+        const validation = validatePuzzle(start);
+        if (!validation.ok) {
+          return { path: null, stats: null, error: validation.message };
+        }
+        if (!isSolvable(validation.state)) {
+          return {
+            path: null,
+            stats: null,
+            error: "This puzzle is unsolvable (odd inversion parity). No solution exists.",
+          };
+        }
+
+        const { cameFrom, stats } = bfs(validation.state, goal);
+        if (cameFrom === null) {
+          return {
+            path: null,
+            stats,
+            error: "No solution found (search exhausted).",
+          };
+        }
+
+        return { path: reconstructPath(cameFrom, goal), stats, error: null };
+      }
+
+      function tileMovedBetween(prev, curr) {
+        if (!prev || !curr) return null;
+        const blankPrev = blankIndex(prev);
+        const moved = curr[blankPrev];
+        return moved === 0 ? null : moved;
+      }
+
+      function moveDirection(prev, curr) {
+        const blankPrev = blankIndex(prev);
+        const blankCurr = blankIndex(curr);
+        const fromRow = Math.floor(blankCurr / 3);
+        const fromCol = blankCurr % 3;
+        const toRow = Math.floor(blankPrev / 3);
+        const toCol = blankPrev % 3;
+        if (toRow < fromRow) return "up";
+        if (toRow > fromRow) return "down";
+        if (toCol < fromCol) return "left";
+        if (toCol > fromCol) return "right";
+        return null;
+      }
+
+      function describeMove(prev, curr) {
+        const tile = tileMovedBetween(prev, curr);
+        const dir = moveDirection(prev, curr);
+        if (tile === null || !dir) return null;
+        return { tile, dir };
+      }
+
+      window.PuzzleBFS = {
+        DEFAULT_START,
+        GOAL,
+        solveBfs,
+        tileMovedBetween,
+        describeMove,
+      };
+    })();
+  </script>
+
+  <script>
+    /* =====================================================================
+       UI: board rendering, controls, playback, optimal-path list
+       ===================================================================== */
+    (function () {
+      "use strict";
+
+      const {
+        DEFAULT_START,
+        GOAL,
+        solveBfs,
+        tileMovedBetween,
+        describeMove,
+      } = window.PuzzleBFS;
+
+      const boardEl = document.getElementById("board");
+      const inputGridEl = document.getElementById("inputGrid");
+      const pathListEl = document.getElementById("pathList");
+      const stepLabelEl = document.getElementById("stepLabel");
+      const tileMovedEl = document.getElementById("tileMoved");
+      const statusEl = document.getElementById("status");
+      const speedSlider = document.getElementById("speedSlider");
+      const speedLabel = document.getElementById("speedLabel");
+
+      const btnSolve = document.getElementById("btnSolve");
+      const btnPrev = document.getElementById("btnPrev");
+      const btnPlay = document.getElementById("btnPlay");
+      const btnNext = document.getElementById("btnNext");
+      const btnReset = document.getElementById("btnReset");
+
+      const statMoves = document.getElementById("statMoves");
+      const statExpanded = document.getElementById("statExpanded");
+      const statDiscovered = document.getElementById("statDiscovered");
+      const statTime = document.getElementById("statTime");
+
+      let path = null;
+      let stats = null;
+      let stepIndex = 0;
+      let playing = false;
+      let playTimer = null;
+      let animating = false;
+      let displayedState = null;
+
+      for (let i = 0; i < 9; i++) {
+        const slot = document.createElement("div");
+        slot.className = "slot";
+        slot.setAttribute("aria-hidden", "true");
+        boardEl.appendChild(slot);
+      }
+
+      const tileEls = {};
+      for (let v = 1; v <= 8; v++) {
+        const tile = document.createElement("div");
+        tile.className = "tile no-animate";
+        tile.textContent = String(v);
+        tile.dataset.value = String(v);
+        tile.setAttribute("role", "img");
+        tile.setAttribute("aria-label", `tile ${v}`);
+        boardEl.appendChild(tile);
+        tileEls[v] = tile;
+      }
+
+      const inputs = [];
+      for (let i = 0; i < 9; i++) {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.inputMode = "numeric";
+        input.maxLength = 1;
+        input.value = String(DEFAULT_START[i]);
+        input.setAttribute("aria-label", `Tile position ${i + 1}`);
+        inputGridEl.appendChild(input);
+        inputs.push(input);
+      }
+
+      function getSlideMs() {
+        return Number(speedSlider.value);
+      }
+
+      function syncSlideDuration() {
+        boardEl.style.setProperty("--slide-ms", `${getSlideMs()}ms`);
+        speedLabel.textContent = `${speedSlider.value} ms`;
+      }
+
+      function layoutMetrics() {
+        const styles = getComputedStyle(boardEl);
+        const pad = parseFloat(styles.paddingLeft) || 10;
+        const gap = parseFloat(styles.gap) || 6;
+        const inner = boardEl.clientWidth - 2 * pad;
+        const cell = (inner - 2 * gap) / 3;
+        return { pad, gap, cell };
+      }
+
+      function positionFor(index) {
+        const { pad, gap, cell } = layoutMetrics();
+        const row = Math.floor(index / 3);
+        const col = index % 3;
+        return {
+          x: pad + col * (cell + gap),
+          y: pad + row * (cell + gap),
+          size: cell,
+        };
+      }
+
+      function renderBoard(state, animate) {
+        const prev = displayedState;
+        let movingValue = null;
+        if (animate && prev) {
+          movingValue = tileMovedBetween(prev, state);
+        }
+
+        const metrics = [];
+        for (let v = 1; v <= 8; v++) {
+          metrics[v] = positionFor(state.indexOf(v));
+        }
+
+        if (movingValue !== null) {
+          const mover = tileEls[movingValue];
+          for (let v = 1; v <= 8; v++) {
+            const tile = tileEls[v];
+            const { x, y, size } = metrics[v];
+            tile.style.width = `${size}px`;
+            tile.style.height = `${size}px`;
+            if (v === movingValue) {
+              tile.classList.add("no-animate");
+              tile.classList.add("sliding");
+            } else {
+              tile.classList.add("no-animate");
+              tile.classList.remove("sliding");
+              tile.style.transform = `translate(${x}px, ${y}px)`;
+            }
+          }
+          void mover.offsetWidth;
+          requestAnimationFrame(() => {
+            mover.classList.remove("no-animate");
+            const { x, y } = metrics[movingValue];
+            mover.style.transform = `translate(${x}px, ${y}px)`;
+          });
+        } else {
+          for (let v = 1; v <= 8; v++) {
+            const tile = tileEls[v];
+            const { x, y, size } = metrics[v];
+            tile.classList.add("no-animate");
+            tile.classList.remove("sliding");
+            tile.style.width = `${size}px`;
+            tile.style.height = `${size}px`;
+            tile.style.transform = `translate(${x}px, ${y}px)`;
+          }
+        }
+
+        displayedState = state.slice();
+      }
+
+      function waitForSlide() {
+        return new Promise((resolve) => {
+          window.setTimeout(resolve, getSlideMs());
+        });
+      }
+
+      function readInputState() {
+        return inputs.map((el) => {
+          const raw = el.value.trim();
+          if (raw === "") return NaN;
+          return Number(raw);
+        });
+      }
+
+      function setStatus(message, kind) {
+        statusEl.textContent = message || "";
+        statusEl.className = "status" + (kind ? " " + kind : "");
+      }
+
+      function clearStats() {
+        statMoves.textContent = "—";
+        statExpanded.textContent = "—";
+        statDiscovered.textContent = "—";
+        statTime.textContent = "—";
+      }
+
+      function showStats(s, moves) {
+        statMoves.textContent = String(moves);
+        statExpanded.textContent = String(s.statesExpanded);
+        statDiscovered.textContent = String(s.statesDiscovered);
+        statTime.textContent = s.timeSeconds.toFixed(4) + " seconds";
+      }
+
+      function clearPathList() {
+        pathListEl.innerHTML = "";
+      }
+
+      function makeMiniBoard(state) {
+        const mini = document.createElement("div");
+        mini.className = "path-mini";
+        mini.setAttribute("aria-hidden", "true");
+        for (let i = 0; i < 9; i++) {
+          const cell = document.createElement("span");
+          const v = state[i];
+          if (v === 0) {
+            cell.className = "blank";
+            cell.textContent = "";
+          } else {
+            cell.textContent = String(v);
+          }
+          mini.appendChild(cell);
+        }
+        return mini;
+      }
+
+      function buildPathList(solutionPath) {
+        clearPathList();
+        if (!solutionPath || solutionPath.length === 0) return;
+
+        solutionPath.forEach((state, i) => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "path-item";
+          item.dataset.step = String(i);
+
+          const meta = document.createElement("div");
+          meta.className = "path-meta";
+
+          const stepNum = document.createElement("div");
+          stepNum.className = "step-num";
+          stepNum.textContent = `Step ${i}`;
+
+          const stepMove = document.createElement("div");
+          stepMove.className = "step-move";
+          if (i === 0) {
+            stepMove.textContent = "Start state";
+          } else {
+            const move = describeMove(solutionPath[i - 1], state);
+            if (move) {
+              stepMove.innerHTML = `Tile <strong>${move.tile}</strong> → ${move.dir}`;
+            } else {
+              stepMove.textContent = "Move";
+            }
+          }
+
+          meta.appendChild(stepNum);
+          meta.appendChild(stepMove);
+          item.appendChild(makeMiniBoard(state));
+          item.appendChild(meta);
+
+          item.addEventListener("click", async () => {
+            if (!path || animating) return;
+            stopPlayback();
+            const target = Number(item.dataset.step);
+            const adjacent = Math.abs(target - stepIndex) === 1;
+            await goToStep(target, { animate: adjacent });
+          });
+
+          pathListEl.appendChild(item);
+        });
+      }
+
+      function highlightPathStep(index) {
+        const items = pathListEl.querySelectorAll(".path-item");
+        items.forEach((el) => {
+          const isCurrent = Number(el.dataset.step) === index;
+          el.classList.toggle("current", isCurrent);
+          if (isCurrent) {
+            const listRect = pathListEl.getBoundingClientRect();
+            const itemRect = el.getBoundingClientRect();
+            if (itemRect.top < listRect.top || itemRect.bottom > listRect.bottom) {
+              el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+            }
+          }
+        });
+      }
+
+      function stopPlayback() {
+        playing = false;
+        if (playTimer !== null) {
+          clearTimeout(playTimer);
+          playTimer = null;
+        }
+        btnPlay.textContent = "Play";
+      }
+
+      function updateStepLabels() {
+        const maxStep = path ? path.length - 1 : 0;
+        stepLabelEl.textContent = `Step ${stepIndex} / ${maxStep}`;
+
+        if (!path || stepIndex === 0) {
+          tileMovedEl.textContent = "—";
+        } else {
+          const moved = tileMovedBetween(path[stepIndex - 1], path[stepIndex]);
+          tileMovedEl.textContent = moved === null ? "—" : String(moved);
+        }
+
+        const hasPath = Array.isArray(path) && path.length > 0;
+        btnPrev.disabled = !hasPath || stepIndex <= 0 || animating || playing;
+        btnNext.disabled = !hasPath || stepIndex >= maxStep || animating || playing;
+        btnPlay.disabled = !hasPath || maxStep === 0;
+        btnReset.disabled = !hasPath || animating;
+
+        highlightPathStep(hasPath ? stepIndex : -1);
+      }
+
+      async function goToStep(index, options) {
+        if (!path) return;
+        const animate = !options || options.animate !== false;
+        const target = Math.max(0, Math.min(index, path.length - 1));
+        if (target === stepIndex && displayedState) {
+          updateStepLabels();
+          return;
+        }
+
+        const adjacent = Math.abs(target - stepIndex) === 1;
+        const shouldAnimate = animate && adjacent;
+
+        stepIndex = target;
+        updateStepLabels();
+
+        if (shouldAnimate) {
+          animating = true;
+          updateStepLabels();
+          renderBoard(path[stepIndex], true);
+          await waitForSlide();
+          for (let v = 1; v <= 8; v++) {
+            tileEls[v].classList.remove("sliding");
+          }
+          animating = false;
+          updateStepLabels();
+        } else {
+          renderBoard(path[stepIndex], false);
+          updateStepLabels();
+        }
+      }
+
+      function scheduleNextPlayTick() {
+        if (!playing || !path) return;
+        if (stepIndex >= path.length - 1) {
+          stopPlayback();
+          updateStepLabels();
+          return;
+        }
+
+        playTimer = window.setTimeout(async () => {
+          playTimer = null;
+          if (!playing) return;
+          await goToStep(stepIndex + 1, { animate: true });
+          if (!playing) return;
+          if (stepIndex >= path.length - 1) {
+            stopPlayback();
+            updateStepLabels();
+            return;
+          }
+          scheduleNextPlayTick();
+        }, 0);
+      }
+
+      function onSolve() {
+        stopPlayback();
+        animating = false;
+        setStatus("Solving…");
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            const start = readInputState();
+            const result = solveBfs(start, GOAL.slice());
+
+            if (result.error) {
+              path = null;
+              stats = null;
+              stepIndex = 0;
+              clearStats();
+              clearPathList();
+              const usable = start.every((v) => Number.isInteger(v) && v >= 0 && v <= 8);
+              if (usable && start.length === 9) {
+                renderBoard(start, false);
+              } else {
+                renderBoard(DEFAULT_START.slice(), false);
+              }
+              updateStepLabels();
+              setStatus(result.error, "error");
+              btnPrev.disabled = true;
+              btnNext.disabled = true;
+              btnPlay.disabled = true;
+              btnReset.disabled = true;
+              return;
+            }
+
+            path = result.path;
+            stats = result.stats;
+            stepIndex = 0;
+            showStats(stats, path.length - 1);
+            buildPathList(path);
+            renderBoard(path[0], false);
+            updateStepLabels();
+            setStatus(
+              `Solved in ${path.length - 1} move${path.length - 1 === 1 ? "" : "s"}. Playing solution…`,
+              "ok"
+            );
+
+            if (path.length > 1) {
+              playing = true;
+              btnPlay.textContent = "Pause";
+              updateStepLabels();
+              scheduleNextPlayTick();
+            }
+          }, 0);
+        });
+      }
+
+      btnSolve.addEventListener("click", () => {
+        if (animating) return;
+        onSolve();
+      });
+
+      btnPrev.addEventListener("click", async () => {
+        if (animating || !path) return;
+        stopPlayback();
+        await goToStep(stepIndex - 1, { animate: true });
+      });
+
+      btnNext.addEventListener("click", async () => {
+        if (animating || !path) return;
+        stopPlayback();
+        await goToStep(stepIndex + 1, { animate: true });
+      });
+
+      btnPlay.addEventListener("click", async () => {
+        if (!path || animating) return;
+        if (playing) {
+          stopPlayback();
+          updateStepLabels();
+          return;
+        }
+        if (stepIndex >= path.length - 1) {
+          await goToStep(0, { animate: false });
+        }
+        playing = true;
+        btnPlay.textContent = "Pause";
+        updateStepLabels();
+        scheduleNextPlayTick();
+      });
+
+      btnReset.addEventListener("click", async () => {
+        if (animating || !path) return;
+        stopPlayback();
+        await goToStep(0, { animate: false });
+        setStatus("Reset to Step 0. Solution preserved.");
+      });
+
+      speedSlider.addEventListener("input", () => {
+        syncSlideDuration();
+      });
+
+      window.addEventListener("resize", () => {
+        if (displayedState) {
+          renderBoard(displayedState, false);
+        }
+      });
+
+      syncSlideDuration();
+      renderBoard(DEFAULT_START.slice(), false);
+      updateStepLabels();
+      setStatus("Press Solve to run BFS on the puzzle input.");
+    })();
+  </script>
+</body>
+</html>

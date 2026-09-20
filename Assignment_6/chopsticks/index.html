@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chopsticks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="top">
+        <div class="brand">
+          <p class="brand-mark">Chopsticks</p>
+          <p class="brand-sub">Optimal play via dynamic programming</p>
+        </div>
+        <div class="meta" id="status-bar" aria-live="polite">
+          <span id="role-label">You: —</span>
+          <span id="turn-label">Turn: —</span>
+          <span id="level-label">Level: —</span>
+          <span id="moves-label">Moves left: —</span>
+        </div>
+      </header>
+
+      <section class="setup" id="setup-panel">
+        <h1>Who goes first?</h1>
+        <p>
+          Player A always opens. Pick your seat — the computer takes the other
+          one and plays optimally.
+        </p>
+        <div class="setup-actions">
+          <button type="button" class="role-card is-first" data-role="A">
+            <span class="role-order">1st</span>
+            <span class="role-name">Play as Player A</span>
+            <span class="role-detail">You move first</span>
+            <span class="role-vs">Computer is Player B and replies</span>
+          </button>
+          <button type="button" class="role-card is-second" data-role="B">
+            <span class="role-order">2nd</span>
+            <span class="role-name">Play as Player B</span>
+            <span class="role-detail">You move second</span>
+            <span class="role-vs">Computer is Player A and opens</span>
+          </button>
+        </div>
+      </section>
+
+      <main class="board" id="board" hidden>
+        <div class="board-main">
+        <section class="player-row computer" aria-label="Computer hands">
+          <div class="player-tag">
+            <span id="computer-tag">Computer</span>
+            <span class="thinking" id="thinking" hidden>thinking…</span>
+          </div>
+          <div class="hands fight-pair">
+            <button
+              type="button"
+              class="hand hand--left"
+              data-owner="computer"
+              data-side="left"
+              data-fingers="1"
+              id="computer-left"
+              aria-label="Computer left hand, 1 finger"
+            >
+              <span class="hand-label">L</span>
+              <span class="sr-only finger-count" id="computer-left-count">1</span>
+            </button>
+
+            <span class="fight-spark" aria-hidden="true">vs</span>
+
+            <button
+              type="button"
+              class="hand hand--right"
+              data-owner="computer"
+              data-side="right"
+              data-fingers="1"
+              id="computer-right"
+              aria-label="Computer right hand, 1 finger"
+            >
+              <span class="hand-label">R</span>
+              <span class="sr-only finger-count" id="computer-right-count">1</span>
+            </button>
+          </div>
+        </section>
+
+        <div class="mid-status" id="mid-status">Select an active hand to attack</div>
+
+        <section class="player-row human" aria-label="Your hands">
+          <div class="hands fight-pair" id="human-pair">
+            <button
+              type="button"
+              class="hand hand--left"
+              data-owner="human"
+              data-side="left"
+              data-fingers="1"
+              id="human-left"
+              aria-label="Your left hand, 1 finger"
+            >
+              <span class="hand-label">L</span>
+              <span class="sr-only finger-count" id="human-left-count">1</span>
+            </button>
+
+            <span class="fight-spark" id="human-spark" aria-hidden="true">vs</span>
+
+            <button
+              type="button"
+              class="hand hand--right"
+              data-owner="human"
+              data-side="right"
+              data-fingers="1"
+              id="human-right"
+              aria-label="Your right hand, 1 finger"
+            >
+              <span class="hand-label">R</span>
+              <span class="sr-only finger-count" id="human-right-count">1</span>
+            </button>
+          </div>
+          <div
+            class="give-options"
+            id="give-options"
+            role="group"
+            aria-label="How many fingers to move"
+            hidden
+          ></div>
+          <div class="player-tag">
+            <span id="human-tag">You</span>
+          </div>
+        </section>
+
+        <div class="controls">
+          <button type="button" class="btn" id="btn-analysis">
+            AI Analysis
+          </button>
+          <button type="button" class="btn" id="btn-restart">Restart</button>
+        </div>
+
+        <p class="legend" aria-label="Highlight meanings">
+          <span><i class="swatch swatch-select"></i>Selected</span>
+          <span><i class="swatch swatch-attack"></i>Attack</span>
+          <span><i class="swatch swatch-give"></i>Move fingers</span>
+        </p>
+        </div>
+
+        <div class="overlay game-over" id="game-over-panel" hidden>
+          <div class="overlay-card">
+            <h2 id="game-over-title">Game over</h2>
+            <p id="game-over-detail"></p>
+            <button type="button" class="btn primary" id="btn-play-again">
+              Play again
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <template id="hand-art-template">
+        <!--
+          Exact layout from Assignment_6/hands.drawio:
+          four thin finger bars + two palm rectangles at −10°.
+          Palm blocks overlap so the shared edge has no double border.
+          Right hands use the draw.io figure as-is (fingers on the left
+          of the palm). Left hands are flipped horizontally. Opponent
+          hands use the same left/right treatment, then rotate 180°.
+        -->
+        <span class="hand-art" aria-hidden="true">
+          <svg class="hand-svg" viewBox="0 0 130 180" focusable="false">
+            <ellipse class="hand-shadow" cx="55" cy="168" rx="42" ry="7" />
+            <g class="hand-figure">
+              <!-- Finger strings: draw.io (170/190/210/230), (110/100), 10×60/70 -->
+              <g class="digit digit-1" data-digit="1">
+                <rect class="finger-string" x="10" y="20" width="10" height="60" rx="3" />
+              </g>
+              <g class="digit digit-2" data-digit="2">
+                <rect class="finger-string" x="30" y="10" width="10" height="70" rx="3" />
+              </g>
+              <g class="digit digit-3" data-digit="3">
+                <rect class="finger-string" x="50" y="10" width="10" height="60" rx="3" />
+              </g>
+              <g class="digit digit-4" data-digit="4">
+                <rect class="finger-string" x="70" y="10" width="10" height="60" rx="3" />
+              </g>
+
+              <!--
+                Palm stack: upper (170,160 80×40) + lower (179,200 71×40), −10°.
+                Lower drawn first; upper overlaps to erase the shared border.
+              -->
+              <g class="palm-stack" transform="rotate(-10 50 110)">
+                <!-- Fills only — one outline path so the overlap has no inner border -->
+                <rect
+                  class="palm-fill"
+                  x="19"
+                  y="106"
+                  width="71"
+                  height="40"
+                  rx="6"
+                />
+                <rect
+                  class="palm-fill"
+                  x="10"
+                  y="70"
+                  width="80"
+                  height="44"
+                  rx="6"
+                />
+                <path
+                  class="palm-outline"
+                  fill="none"
+                  d="M16 76
+                     C16 70 20 66 26 66
+                     L84 66
+                     C90 66 94 70 94 76
+                     L94 108
+                     C94 108 94 110 90 112
+                     L86 146
+                     C86 152 82 156 76 156
+                     L28 156
+                     C22 156 18 152 18 146
+                     L18 112
+                     C14 110 14 108 14 108
+                     L14 76 Z"
+                />
+              </g>
+            </g>
+          </svg>
+        </span>
+      </template>
+
+      <aside class="analysis" id="analysis-panel" hidden>
+        <div class="analysis-header">
+          <h2>AI Analysis</h2>
+          <button type="button" class="btn ghost" id="btn-close-analysis">
+            Hide
+          </button>
+        </div>
+        <pre id="analysis-body">Waiting for the computer’s turn…</pre>
+      </aside>
+    </div>
+
+    <script type="module">
+      /**
+       * UI layer — presentation and interaction only.
+       * All legality and AI decisions come from game.js / ai.js.
+       */
+      import {
+        INITIAL_STATE,
+        DEFAULT_DEPTH,
+        overflowSum,
+        legalAttacks,
+        legalRedistributions,
+        applyMove,
+        cloneState,
+        evaluateOutcome,
+        formatState,
+        currentPlayer,
+        levelsRemaining,
+      } from "./game.js";
+      import {
+        buildDpTable,
+        chooseComputerMove,
+        analyzeMove,
+      } from "./ai.js";
+
+      const els = {
+        setup: document.getElementById("setup-panel"),
+        board: document.getElementById("board"),
+        roleLabel: document.getElementById("role-label"),
+        turnLabel: document.getElementById("turn-label"),
+        levelLabel: document.getElementById("level-label"),
+        movesLabel: document.getElementById("moves-label"),
+        midStatus: document.getElementById("mid-status"),
+        thinking: document.getElementById("thinking"),
+        computerTag: document.getElementById("computer-tag"),
+        humanTag: document.getElementById("human-tag"),
+        humanSpark: document.getElementById("human-spark"),
+        giveOptions: document.getElementById("give-options"),
+        gameOverPanel: document.getElementById("game-over-panel"),
+        gameOverTitle: document.getElementById("game-over-title"),
+        gameOverDetail: document.getElementById("game-over-detail"),
+        analysisPanel: document.getElementById("analysis-panel"),
+        analysisBody: document.getElementById("analysis-body"),
+        btnAnalysis: document.getElementById("btn-analysis"),
+        btnRestart: document.getElementById("btn-restart"),
+        btnPlayAgain: document.getElementById("btn-play-again"),
+        btnCloseAnalysis: document.getElementById("btn-close-analysis"),
+        hands: {
+          computerLeft: document.getElementById("computer-left"),
+          computerRight: document.getElementById("computer-right"),
+          humanLeft: document.getElementById("human-left"),
+          humanRight: document.getElementById("human-right"),
+        },
+        counts: {
+          computerLeft: document.getElementById("computer-left-count"),
+          computerRight: document.getElementById("computer-right-count"),
+          humanLeft: document.getElementById("human-left-count"),
+          humanRight: document.getElementById("human-right-count"),
+        },
+      };
+
+      const handArtTemplate = document.getElementById("hand-art-template");
+      for (const btn of Object.values(els.hands)) {
+        const art = handArtTemplate.content.cloneNode(true);
+        btn.appendChild(art);
+      }
+
+      const dpTable = buildDpTable(DEFAULT_DEPTH);
+      let state = cloneState(INITIAL_STATE);
+      /** @type {"A"|"B"|null} */
+      let humanRole = null;
+      /** @type {"left"|"right"|null} */
+      let selectedHumanSide = null;
+      let lastAnalysis = null;
+      let inputLocked = false;
+      const PROMPT_PICK = "Your turn — pick one of your hands.";
+
+      function computerRoleFor(role) {
+        return role === "A" ? "B" : "A";
+      }
+
+      function seatViews() {
+        if (humanRole === "A") {
+          return {
+            a: {
+              leftBtn: els.hands.humanLeft,
+              rightBtn: els.hands.humanRight,
+              leftCount: els.counts.humanLeft,
+              rightCount: els.counts.humanRight,
+            },
+            b: {
+              leftBtn: els.hands.computerLeft,
+              rightBtn: els.hands.computerRight,
+              leftCount: els.counts.computerLeft,
+              rightCount: els.counts.computerRight,
+            },
+          };
+        }
+        return {
+          a: {
+            leftBtn: els.hands.computerLeft,
+            rightBtn: els.hands.computerRight,
+            leftCount: els.counts.computerLeft,
+            rightCount: els.counts.computerRight,
+          },
+          b: {
+            leftBtn: els.hands.humanLeft,
+            rightBtn: els.hands.humanRight,
+            leftCount: els.counts.humanLeft,
+            rightCount: els.counts.humanRight,
+          },
+        };
+      }
+
+      function setCount(btn, countEl, value) {
+        const prev = Number(btn.dataset.fingers || countEl.textContent || 0);
+        const next = value;
+        countEl.textContent = String(next);
+        btn.dataset.fingers = String(next);
+
+        const owner = btn.dataset.owner === "computer" ? "Computer" : "Your";
+        const side = btn.dataset.side;
+        const noun = next === 1 ? "finger" : "fingers";
+        btn.setAttribute(
+          "aria-label",
+          `${owner} ${side} hand, ${next} ${noun}`,
+        );
+
+        btn.querySelectorAll(".digit").forEach((digit) => {
+          const n = Number(digit.dataset.digit);
+          digit.classList.toggle("is-up", n <= next && next > 0);
+        });
+
+        if (prev !== next) {
+          btn.classList.remove("count-changed");
+          void btn.offsetWidth;
+          btn.classList.add("count-changed");
+        }
+      }
+
+      /**
+       * Paint one player's pair of hands.
+       *  - selectable: live hands can be picked as a source
+       *  - selectedSide: the current source hand
+       *  - attackTargets: opponent hands that can be attacked (green)
+       *  - giveTargets: own hands that can receive fingers (blue)
+       */
+      function paintHandPair(view, hand, opts = {}) {
+        const {
+          selectable = false,
+          selectedSide = null,
+          attackTargets = new Set(),
+          giveTargets = new Set(),
+        } = opts;
+
+        for (const side of ["left", "right"]) {
+          const btn = side === "left" ? view.leftBtn : view.rightBtn;
+          const count = side === "left" ? view.leftCount : view.rightCount;
+          const fingers = side === "left" ? hand[0] : hand[1];
+          setCount(btn, count, fingers);
+
+          const isAttackTarget = attackTargets.has(side);
+          const isGiveTarget = giveTargets.has(side);
+          const canSelect = selectable && fingers > 0;
+
+          btn.classList.toggle("is-dead", fingers === 0);
+          btn.classList.toggle("is-selected", selectedSide === side);
+          btn.classList.toggle("is-target", isAttackTarget);
+          btn.classList.toggle("is-give-target", isGiveTarget);
+          btn.classList.toggle("is-active", canSelect);
+
+          const enabled =
+            !inputLocked && (canSelect || isAttackTarget || isGiveTarget);
+          btn.toggleAttribute("disabled", !enabled);
+        }
+      }
+
+      function clearSelection() {
+        selectedHumanSide = null;
+      }
+
+      /**
+       * Redistribution options for the human, derived purely from the
+       * engine's legal successors. For each successor, the source hand is
+       * the one that lost fingers and the target is the one that gained.
+       * @returns {{fromSide:string,toSide:string,amount:number,succ:any}[]}
+       */
+      function humanGiveOptions() {
+        const selfIdx = humanRole === "A" ? 0 : 1;
+        const before = state[selfIdx];
+        const options = [];
+        for (const succ of legalRedistributions(state)) {
+          const after = succ[selfIdx];
+          const fromIdx = after[0] < before[0] ? 0 : after[1] < before[1] ? 1 : -1;
+          const toIdx = after[0] > before[0] ? 0 : after[1] > before[1] ? 1 : -1;
+          if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) continue;
+          options.push({
+            fromSide: fromIdx === 0 ? "left" : "right",
+            toSide: toIdx === 0 ? "left" : "right",
+            amount: before[fromIdx] - after[fromIdx],
+            succ,
+          });
+        }
+        return options;
+      }
+
+      function giveOptionsFrom(fromSide) {
+        return humanGiveOptions()
+          .filter((o) => o.fromSide === fromSide)
+          .sort((a, b) => a.amount - b.amount);
+      }
+
+      /** Render the inline "+1 / +2" chips under the human hands. */
+      function renderGiveChips(options) {
+        els.giveOptions.replaceChildren();
+        if (options.length === 0) {
+          els.giveOptions.hidden = true;
+          return;
+        }
+        const toSide = options[0].toSide;
+        const label = document.createElement("span");
+        label.className = "give-options-label";
+        label.textContent = `Move to ${toSide} hand`;
+        els.giveOptions.appendChild(label);
+
+        const selfIdx = humanRole === "A" ? 0 : 1;
+        for (const opt of options) {
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.className = "give-chip";
+          const after = opt.succ[selfIdx];
+          chip.innerHTML = `<b>+${opt.amount}</b><small>→ ${after[0]} · ${after[1]}</small>`;
+          chip.setAttribute(
+            "aria-label",
+            `Move ${opt.amount} to ${toSide} hand, hands become ${after[0]} and ${after[1]}`,
+          );
+          chip.disabled = inputLocked;
+          chip.addEventListener("click", () => {
+            void executeGive(opt);
+          });
+          els.giveOptions.appendChild(chip);
+        }
+        els.giveOptions.hidden = false;
+      }
+
+      /** Arrow between your hands shows the direction fingers would move. */
+      function renderGiveArrow(options) {
+        if (options.length === 0) {
+          els.humanSpark.textContent = "vs";
+          els.humanSpark.classList.remove("is-arrow");
+          return;
+        }
+        els.humanSpark.textContent = options[0].toSide === "right" ? "→" : "←";
+        els.humanSpark.classList.add("is-arrow");
+      }
+
+      function setMidStatus(message, alert = false) {
+        els.midStatus.textContent = message;
+        els.midStatus.classList.toggle("is-alert", alert);
+      }
+
+      function updateStatusBar() {
+        const turn = currentPlayer(state);
+        const movesLeft = Math.ceil(levelsRemaining(state, DEFAULT_DEPTH) / 2);
+        els.roleLabel.textContent = humanRole
+          ? `You: Player ${humanRole} (${humanRole === "A" ? "first" : "second"})`
+          : "You: —";
+        els.turnLabel.textContent = `Turn: Player ${turn}`;
+        els.levelLabel.textContent = `Level: ${state[2]}`;
+        els.movesLabel.textContent = `Moves left: ~${movesLeft} (depth ${DEFAULT_DEPTH})`;
+      }
+
+      function checkGameOver() {
+        const outcome = evaluateOutcome(state, DEFAULT_DEPTH);
+        if (outcome.status === "ongoing") {
+          els.gameOverPanel.hidden = true;
+          return false;
+        }
+
+        clearSelection();
+        inputLocked = true;
+
+        let title = "Game over";
+        let detail = "";
+        if (outcome.status === "tie") {
+          title = "Tie game";
+          detail =
+            state[2] >= DEFAULT_DEPTH
+              ? `Reached the move limit (depth ${DEFAULT_DEPTH}) with both players still alive.`
+              : "Both players finished with no hands.";
+        } else if (outcome.status === "win_a") {
+          title = humanRole === "A" ? "You win" : "Computer wins";
+          detail = "Player B has no remaining fingers.";
+        } else {
+          title = humanRole === "B" ? "You win" : "Computer wins";
+          detail = "Player A has no remaining fingers.";
+        }
+
+        els.gameOverTitle.textContent = title;
+        els.gameOverDetail.textContent = detail;
+        els.gameOverPanel.hidden = false;
+        setMidStatus(title, true);
+        renderBoard();
+        return true;
+      }
+
+      function renderBoard() {
+        if (!humanRole) return;
+
+        const seats = seatViews();
+        const humanIsToMove =
+          !inputLocked &&
+          currentPlayer(state) === humanRole &&
+          evaluateOutcome(state, DEFAULT_DEPTH).status === "ongoing";
+
+        const attackTargets = new Set();
+        const giveTargets = new Set();
+        let giveOptions = [];
+        if (humanIsToMove && selectedHumanSide) {
+          for (const side of ["left", "right"]) {
+            if (findAttackSuccessor(selectedHumanSide, side)) {
+              attackTargets.add(side);
+            }
+          }
+          giveOptions = giveOptionsFrom(selectedHumanSide);
+          for (const opt of giveOptions) giveTargets.add(opt.toSide);
+        }
+
+        const humanSeat = humanRole === "A" ? seats.a : seats.b;
+        const computerSeat = humanRole === "A" ? seats.b : seats.a;
+        const humanHand = humanRole === "A" ? state[0] : state[1];
+        const computerHand = humanRole === "A" ? state[1] : state[0];
+
+        paintHandPair(humanSeat, humanHand, {
+          selectable: humanIsToMove,
+          selectedSide: selectedHumanSide,
+          giveTargets,
+        });
+        paintHandPair(computerSeat, computerHand, {
+          selectable: false,
+          attackTargets,
+        });
+
+        renderGiveChips(giveOptions);
+        renderGiveArrow(giveOptions);
+
+        els.computerTag.textContent = `Computer · Player ${computerRoleFor(humanRole)}`;
+        els.humanTag.textContent = `You · Player ${humanRole}`;
+        updateStatusBar();
+      }
+
+      function renderAnalysis(analysis) {
+        lastAnalysis = analysis;
+        const lines = [
+          `Current state: ${analysis.formattedState}`,
+          "",
+          `Computer role: Player ${analysis.computerRole} — ${analysis.objective}`,
+          "",
+          "Legal moves considered:",
+          "",
+        ];
+
+        for (const move of analysis.moves) {
+          const sign = move.value > 0 ? `+${move.value}` : String(move.value);
+          const mark = move.selected ? "  ← selected" : "";
+          lines.push(`Move ${move.index}   value: ${sign.padStart(2)}${mark}`);
+          lines.push(`         ${move.formatted}`);
+        }
+
+        lines.push("");
+        lines.push(`Predicted outcome: ${analysis.predictedOutcome}`);
+        els.analysisBody.textContent = lines.join("\n");
+      }
+
+      async function maybeComputerTurn() {
+        if (!humanRole) return;
+        if (checkGameOver()) return;
+
+        if (currentPlayer(state) !== computerRoleFor(humanRole)) {
+          inputLocked = false;
+          setMidStatus(PROMPT_PICK);
+          renderBoard();
+          return;
+        }
+
+        inputLocked = true;
+        clearSelection();
+        renderBoard();
+        els.thinking.hidden = false;
+        setMidStatus("Computer is calculating the optimal move…", true);
+
+        await new Promise((r) => setTimeout(r, 280));
+
+        const role = computerRoleFor(humanRole);
+        const analysis = analyzeMove(state, dpTable, role);
+        renderAnalysis(analysis);
+
+        const { move } = chooseComputerMove(state, dpTable);
+        const attack = describeAttack(state, move, role);
+        const give = attack ? null : describeGive(state, move, role);
+
+        els.thinking.hidden = true;
+        let summary = "Computer moved";
+        if (attack) {
+          setMidStatus(`Computer attacks your ${attack.toSide} hand`, true);
+          await playAttackAnimation(
+            handButton("computer", attack.fromSide),
+            handButton("human", attack.toSide),
+          );
+          summary = `Computer attacked your ${attack.toSide} hand`;
+        } else if (give) {
+          setMidStatus(
+            `Computer moves ${give.amount} to its ${give.toSide} hand`,
+            true,
+          );
+          await playGiveAnimation(
+            handButton("computer", give.fromSide),
+            handButton("computer", give.toSide),
+            give.amount,
+          );
+          summary = `Computer moved ${give.amount} finger${give.amount === 1 ? "" : "s"} to its ${give.toSide} hand`;
+        }
+
+        state = applyMove(state, move);
+        setMidStatus(summary);
+        renderBoard();
+
+        if (!checkGameOver()) {
+          inputLocked = false;
+          setMidStatus(`${summary}. ${PROMPT_PICK}`);
+          renderBoard();
+        }
+      }
+
+      async function commitHumanMove(successor, summary) {
+        state = applyMove(state, successor);
+        clearSelection();
+        setMidStatus(summary || `You played ${formatState(successor)}`);
+        renderBoard();
+        if (!checkGameOver()) {
+          await maybeComputerTurn();
+        }
+      }
+
+      /**
+       * Slide the attacking hand toward the target hand, shake the target,
+       * and resolve once the animation has played. Purely visual.
+       */
+      function playAttackAnimation(attackerBtn, targetBtn) {
+        const reduceMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+        if (reduceMotion) return Promise.resolve();
+
+        const a = attackerBtn.getBoundingClientRect();
+        const t = targetBtn.getBoundingClientRect();
+        const dx = (t.left + t.width / 2 - (a.left + a.width / 2)) * 0.55;
+        const dy = (t.top + t.height / 2 - (a.top + a.height / 2)) * 0.55;
+
+        attackerBtn.style.setProperty("--attack-dx", `${dx}px`);
+        attackerBtn.style.setProperty("--attack-dy", `${dy}px`);
+        attackerBtn.classList.remove("is-attacking");
+        targetBtn.classList.remove("is-hit");
+        void attackerBtn.offsetWidth;
+        attackerBtn.classList.add("is-attacking");
+
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            targetBtn.classList.add("is-hit");
+          }, 180);
+          setTimeout(() => {
+            attackerBtn.classList.remove("is-attacking");
+            targetBtn.classList.remove("is-hit");
+            attackerBtn.style.removeProperty("--attack-dx");
+            attackerBtn.style.removeProperty("--attack-dy");
+            resolve();
+          }, 460);
+        });
+      }
+
+      /**
+       * Redistribution animation: `amount` small finger tokens fly from the
+       * source hand to the target hand, the source dips, the target pops.
+       * Purely visual; the state change is applied by the caller afterwards.
+       */
+      function playGiveAnimation(fromBtn, toBtn, amount) {
+        const reduceMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+        if (reduceMotion) return Promise.resolve();
+
+        const from = fromBtn.getBoundingClientRect();
+        const to = toBtn.getBoundingClientRect();
+        const boardRect = els.board.getBoundingClientRect();
+        const startX = from.left + from.width / 2 - boardRect.left;
+        const startY = from.top + from.height / 2 - boardRect.top;
+        const endX = to.left + to.width / 2 - boardRect.left;
+        const endY = to.top + to.height / 2 - boardRect.top;
+        const arc = -Math.max(28, Math.abs(endX - startX) * 0.22);
+
+        fromBtn.classList.remove("is-giving");
+        toBtn.classList.remove("is-receiving");
+        void fromBtn.offsetWidth;
+        fromBtn.classList.add("is-giving");
+
+        const stagger = 90;
+        const travel = 420;
+        const finished = [];
+        for (let i = 0; i < amount; i++) {
+          const token = document.createElement("span");
+          token.className = "give-token";
+          token.style.left = `${startX}px`;
+          token.style.top = `${startY}px`;
+          els.board.appendChild(token);
+          const anim = token.animate(
+            [
+              { transform: "translate(-50%, -50%) scale(0.6)", opacity: 0 },
+              {
+                transform: "translate(-50%, -50%) scale(1)",
+                opacity: 1,
+                offset: 0.15,
+              },
+              {
+                transform: `translate(calc(${(endX - startX) / 2}px - 50%), calc(${(endY - startY) / 2 + arc}px - 50%)) scale(1.1)`,
+                opacity: 1,
+                offset: 0.5,
+              },
+              {
+                transform: `translate(calc(${(endX - startX) * 0.85}px - 50%), calc(${(endY - startY) * 0.85 + arc * 0.3}px - 50%)) scale(1)`,
+                opacity: 1,
+                offset: 0.82,
+              },
+              {
+                transform: `translate(calc(${endX - startX}px - 50%), calc(${endY - startY}px - 50%)) scale(0.6)`,
+                opacity: 0,
+              },
+            ],
+            {
+              duration: travel,
+              delay: i * stagger,
+              easing: "ease-in-out",
+              fill: "forwards",
+            },
+          );
+          finished.push(anim.finished.then(() => token.remove()));
+        }
+
+        const total = travel + stagger * (amount - 1);
+        setTimeout(() => toBtn.classList.add("is-receiving"), total - 140);
+
+        return Promise.all(finished).then(
+          () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                fromBtn.classList.remove("is-giving");
+                toBtn.classList.remove("is-receiving");
+                resolve();
+              }, 160);
+            }),
+        );
+      }
+
+      /**
+       * Given a before/after state for a redistribution, recover which hand
+       * gave to which and how many, for animation only. Returns null if the
+       * move isn't a redistribution by the given role.
+       */
+      function describeGive(before, after, moverRole) {
+        const selfIdx = moverRole === "A" ? 0 : 1;
+        const oppIdx = 1 - selfIdx;
+        if (
+          before[oppIdx][0] !== after[oppIdx][0] ||
+          before[oppIdx][1] !== after[oppIdx][1]
+        ) {
+          return null;
+        }
+        const b = before[selfIdx];
+        const a = after[selfIdx];
+        const fromIdx = a[0] < b[0] ? 0 : a[1] < b[1] ? 1 : -1;
+        const toIdx = a[0] > b[0] ? 0 : a[1] > b[1] ? 1 : -1;
+        if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return null;
+        return {
+          fromSide: fromIdx === 0 ? "left" : "right",
+          toSide: toIdx === 0 ? "left" : "right",
+          amount: b[fromIdx] - a[fromIdx],
+        };
+      }
+
+      /**
+       * Given a from-state and a to-state, figure out which hand attacked
+       * which (if it was an attack) so the UI can animate it.
+       * Returns null for redistributions.
+       */
+      function describeAttack(before, after, moverRole) {
+        const selfIdx = moverRole === "A" ? 0 : 1;
+        const oppIdx = 1 - selfIdx;
+        const selfBefore = before[selfIdx];
+        const selfAfter = after[selfIdx];
+        const oppBefore = before[oppIdx];
+        const oppAfter = after[oppIdx];
+
+        if (
+          selfBefore[0] !== selfAfter[0] ||
+          selfBefore[1] !== selfAfter[1]
+        ) {
+          return null;
+        }
+
+        let toIdx = -1;
+        if (oppBefore[0] !== oppAfter[0]) toIdx = 0;
+        else if (oppBefore[1] !== oppAfter[1]) toIdx = 1;
+        if (toIdx < 0) return null;
+
+        // Which attacker hand produces this result? Prefer a live hand
+        // whose overflowSum matches; ties pick the first match.
+        let fromIdx = -1;
+        for (const idx of [0, 1]) {
+          if (selfBefore[idx] <= 0) continue;
+          if (overflowSum(selfBefore[idx], oppBefore[toIdx]) === oppAfter[toIdx]) {
+            fromIdx = idx;
+            break;
+          }
+        }
+        if (fromIdx < 0) return null;
+
+        return {
+          fromSide: fromIdx === 0 ? "left" : "right",
+          toSide: toIdx === 0 ? "left" : "right",
+        };
+      }
+
+      function handButton(owner, side) {
+        if (owner === "human") {
+          return side === "left" ? els.hands.humanLeft : els.hands.humanRight;
+        }
+        return side === "left" ? els.hands.computerLeft : els.hands.computerRight;
+      }
+
+      /**
+       * Match a legal attack successor for (attacker hand → target hand)
+       * using overflowSum from the game engine — no separate attack rules.
+       */
+      function findAttackSuccessor(fromSide, toSide) {
+        const fromIdx = fromSide === "left" ? 0 : 1;
+        const toIdx = toSide === "left" ? 0 : 1;
+        const selfBefore = humanRole === "A" ? state[0] : state[1];
+        const oppBefore = humanRole === "A" ? state[1] : state[0];
+        const attackFingers = selfBefore[fromIdx];
+        if (attackFingers <= 0 || oppBefore[toIdx] <= 0) return null;
+
+        const expected = overflowSum(attackFingers, oppBefore[toIdx]);
+        if (expected === undefined) return null;
+
+        for (const succ of legalAttacks(state)) {
+          const selfAfter = humanRole === "A" ? succ[0] : succ[1];
+          const oppAfter = humanRole === "A" ? succ[1] : succ[0];
+
+          if (
+            selfAfter[0] !== selfBefore[0] ||
+            selfAfter[1] !== selfBefore[1]
+          ) {
+            continue;
+          }
+          if (oppAfter[1 - toIdx] !== oppBefore[1 - toIdx]) continue;
+          if (oppAfter[toIdx] !== expected) continue;
+          return succ;
+        }
+        return null;
+      }
+
+      /** Status line after a source hand is chosen, based on what's legal. */
+      function promptForSelection(side) {
+        const canAttack = ["left", "right"].some((t) =>
+          findAttackSuccessor(side, t),
+        );
+        const gives = giveOptionsFrom(side);
+        const other = side === "left" ? "right" : "left";
+        if (canAttack && gives.length > 0) {
+          return `Attack a green hand, or move fingers to your ${other} hand.`;
+        }
+        if (canAttack) return "Attack a green hand.";
+        if (gives.length > 0) return `Move fingers to your ${other} hand.`;
+        return "No legal moves from this hand — pick the other one.";
+      }
+
+      function selectHand(side) {
+        selectedHumanSide = side;
+        setMidStatus(promptForSelection(side));
+        renderBoard();
+      }
+
+      async function onHumanHandClick(side) {
+        if (inputLocked || !humanRole) return;
+        if (currentPlayer(state) !== humanRole) return;
+
+        const hand = humanRole === "A" ? state[0] : state[1];
+        const fingers = side === "left" ? hand[0] : hand[1];
+
+        // Tap the selected hand again to deselect.
+        if (selectedHumanSide === side) {
+          clearSelection();
+          setMidStatus(PROMPT_PICK);
+          renderBoard();
+          return;
+        }
+
+        // With a source chosen, the other own hand is a redistribution target.
+        if (selectedHumanSide) {
+          const options = giveOptionsFrom(selectedHumanSide).filter(
+            (o) => o.toSide === side,
+          );
+          if (options.length === 1) {
+            await executeGive(options[0]);
+            return;
+          }
+          if (options.length > 1) {
+            setMidStatus("Choose how many fingers to move.", true);
+            els.giveOptions.classList.remove("nudge");
+            void els.giveOptions.offsetWidth;
+            els.giveOptions.classList.add("nudge");
+            return;
+          }
+        }
+
+        // Otherwise treat the tap as choosing a (live) source hand.
+        if (fingers <= 0) return;
+        selectHand(side);
+      }
+
+      async function executeGive(opt) {
+        if (inputLocked || !humanRole) return;
+        if (currentPlayer(state) !== humanRole) return;
+
+        inputLocked = true;
+        els.giveOptions.hidden = true;
+        renderBoard();
+        await playGiveAnimation(
+          handButton("human", opt.fromSide),
+          handButton("human", opt.toSide),
+          opt.amount,
+        );
+        inputLocked = false;
+        await commitHumanMove(
+          opt.succ,
+          `You moved ${opt.amount} finger${opt.amount === 1 ? "" : "s"} to your ${opt.toSide} hand`,
+        );
+      }
+
+      async function onComputerHandClick(side) {
+        if (inputLocked || !humanRole || !selectedHumanSide) return;
+        if (currentPlayer(state) !== humanRole) return;
+
+        const succ = findAttackSuccessor(selectedHumanSide, side);
+        if (!succ) {
+          setMidStatus("That hand can't be attacked.", true);
+          return;
+        }
+
+        inputLocked = true;
+        renderBoard();
+        await playAttackAnimation(
+          handButton("human", selectedHumanSide),
+          handButton("computer", side),
+        );
+        inputLocked = false;
+        await commitHumanMove(succ, `You attacked the computer's ${side} hand`);
+      }
+
+      async function startGame(role) {
+        humanRole = role;
+        state = cloneState(INITIAL_STATE);
+        clearSelection();
+        inputLocked = false;
+        lastAnalysis = null;
+        els.analysisBody.textContent = "Waiting for the computer’s turn…";
+        els.analysisPanel.hidden = true;
+        els.gameOverPanel.hidden = true;
+        els.giveOptions.hidden = true;
+        els.setup.hidden = true;
+        els.board.hidden = false;
+        els.thinking.hidden = true;
+        // Who opens is decided by the engine (currentPlayer at level 0).
+        const humanOpens = currentPlayer(state) === role;
+        setMidStatus(
+          humanOpens
+            ? "You move first — pick one of your hands."
+            : `Computer (Player ${computerRoleFor(role)}) moves first…`,
+        );
+        renderBoard();
+        if (humanOpens) return;
+        await maybeComputerTurn();
+      }
+
+      function restartToSetup() {
+        humanRole = null;
+        state = cloneState(INITIAL_STATE);
+        clearSelection();
+        inputLocked = false;
+        lastAnalysis = null;
+        els.board.hidden = true;
+        els.setup.hidden = false;
+        els.analysisPanel.hidden = true;
+        els.gameOverPanel.hidden = true;
+        els.giveOptions.hidden = true;
+        els.thinking.hidden = true;
+        updateStatusBar();
+        setMidStatus("");
+      }
+
+      document.querySelectorAll("[data-role]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          void startGame(btn.getAttribute("data-role"));
+        });
+      });
+
+      els.hands.humanLeft.addEventListener("click", () => {
+        void onHumanHandClick("left");
+      });
+      els.hands.humanRight.addEventListener("click", () => {
+        void onHumanHandClick("right");
+      });
+      els.hands.computerLeft.addEventListener("click", () => {
+        void onComputerHandClick("left");
+      });
+      els.hands.computerRight.addEventListener("click", () => {
+        void onComputerHandClick("right");
+      });
+
+      els.btnRestart.addEventListener("click", restartToSetup);
+      els.btnPlayAgain.addEventListener("click", restartToSetup);
+      els.btnAnalysis.addEventListener("click", () => {
+        if (lastAnalysis) renderAnalysis(lastAnalysis);
+        els.analysisPanel.hidden = !els.analysisPanel.hidden;
+      });
+      els.btnCloseAnalysis.addEventListener("click", () => {
+        els.analysisPanel.hidden = true;
+      });
+
+      updateStatusBar();
+    </script>
+  </body>
+</html>

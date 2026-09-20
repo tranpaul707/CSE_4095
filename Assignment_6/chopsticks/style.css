@@ -1,0 +1,1007 @@
+:root {
+  --bg-0: #0f1c1a;
+  --bg-1: #163028;
+  --bg-2: #1e3d33;
+  --ink: #e8f0ea;
+  --muted: #9bb5a8;
+  --accent: #e2a04a;
+  --accent-2: #7ec8a3;
+  --danger: #e07a6a;
+  --hand: #243f36;
+  --hand-border: #3d6556;
+  --hand-active: #2f5a4a;
+  --hand-selected: #e2a04a;
+  --hand-target: #7ec8a3;
+  --hand-give: #8fb7ff;
+  --hand-dead: #1a2a25;
+  --fist-skin: #ffe6cc;
+  --fist-skin-deep: #ffd7a8;
+  --fist-line: #d79b00;
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  --radius: 18px;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, #2a5646 0%, transparent 55%),
+    radial-gradient(circle at 85% 80%, #1a3a30 0%, transparent 40%),
+    linear-gradient(160deg, var(--bg-0), var(--bg-1) 45%, #0c1614);
+  line-height: 1.45;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.app {
+  width: min(920px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1.5rem 0 3rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+}
+
+.brand-mark {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.brand-sub {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.meta span {
+  white-space: nowrap;
+}
+
+.setup {
+  background: color-mix(in srgb, var(--bg-2) 88%, black);
+  border: 1px solid color-mix(in srgb, var(--hand-border) 70%, transparent);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  box-shadow: var(--shadow);
+  animation: rise 0.45s var(--ease);
+}
+
+.setup h1 {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+}
+
+.setup p {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  max-width: 36rem;
+}
+
+.setup-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  gap: 0.9rem;
+  max-width: 36rem;
+}
+
+/* Role cards on the setup screen: make turn order the headline */
+.role-card {
+  --card-accent: var(--accent);
+  position: relative;
+  display: grid;
+  gap: 0.2rem;
+  justify-items: start;
+  text-align: left;
+  padding: 1.1rem 1.15rem 1.05rem 1.15rem;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--card-accent) 45%, var(--hand-border));
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--card-accent) 14%, var(--hand)),
+      var(--hand) 70%
+    );
+  color: var(--ink);
+  transition:
+    transform 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
+}
+
+.role-card.is-second {
+  --card-accent: var(--accent-2);
+}
+
+.role-card:hover,
+.role-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--card-accent);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  outline: none;
+}
+
+.role-order {
+  display: inline-grid;
+  place-items: center;
+  min-width: 3.1rem;
+  padding: 0.25rem 0.6rem;
+  margin-bottom: 0.35rem;
+  border-radius: 999px;
+  background: var(--card-accent);
+  color: #10201a;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+
+.role-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.role-detail {
+  font-size: 1rem;
+  color: color-mix(in srgb, var(--card-accent) 75%, white);
+  font-weight: 600;
+}
+
+.role-vs {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.btn {
+  border: 1px solid var(--hand-border);
+  background: var(--hand);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.65rem 1.15rem;
+  transition:
+    transform 0.2s var(--ease),
+    background 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    opacity 0.2s var(--ease);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--accent-2);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 70%, white);
+  color: #1a1208;
+  font-weight: 700;
+}
+
+.btn.ghost {
+  background: transparent;
+}
+
+.board {
+  position: relative;
+  display: grid;
+  gap: 1rem 1.25rem;
+  align-items: start;
+  padding: 1.5rem;
+  overflow: visible;
+  border-radius: calc(var(--radius) + 6px);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-2) 90%, white 4%), var(--bg-1));
+  border: 1px solid color-mix(in srgb, var(--hand-border) 65%, transparent);
+  box-shadow: var(--shadow);
+  animation: rise 0.45s var(--ease);
+}
+
+.board[hidden],
+.setup[hidden] {
+  display: none !important;
+}
+
+.board-main {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 1.25rem;
+  margin: -0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.swatch-select {
+  border-color: var(--hand-selected);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--hand-selected) 35%, transparent);
+}
+
+.swatch-attack {
+  border-color: var(--hand-target);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--hand-target) 35%, transparent);
+}
+
+.swatch-give {
+  border-color: var(--hand-give);
+  border-style: dashed;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--hand-give) 35%, transparent);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.player-row {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
+}
+
+.player-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.thinking {
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  text-transform: none;
+  animation: pulse 1.1s ease-in-out infinite;
+}
+
+.hands {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: flex-end;
+  width: min(100%, 40rem);
+}
+
+.fight-pair {
+  position: relative;
+  padding: 0.35rem 0.25rem 0.75rem;
+}
+
+.fight-spark {
+  flex: 0 0 auto;
+  width: 2.2rem;
+  align-self: center;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--accent) 75%, white);
+  opacity: 0.5;
+  user-select: none;
+  animation: sparkPulse 2.4s ease-in-out infinite;
+  transition: color 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+
+/* Between your hands the spark becomes a direction arrow when fingers can move */
+.fight-spark.is-arrow {
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--hand-give);
+  opacity: 1;
+  animation: arrowNudge 0.9s ease-in-out infinite;
+}
+
+.hand {
+  --float-x: 0px;
+  --face-rotate: 0deg;
+  --hand-turn: 0deg;
+  width: clamp(8rem, 28vw, 11.5rem);
+  height: clamp(9rem, 32vw, 12.5rem);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  position: relative;
+  padding: 0;
+  isolation: isolate;
+  transition: filter 0.22s var(--ease), opacity 0.22s var(--ease);
+  animation: fistFloat 3.4s ease-in-out infinite;
+}
+
+.hand--left {
+  --face-rotate: -6deg;
+  --float-x: 8px;
+  animation-delay: 0s;
+}
+
+.hand--left .hand-figure {
+  transform: scaleX(-1);
+  transform-origin: 55px 100px;
+}
+
+.hand--right {
+  --face-rotate: 6deg;
+  --float-x: -8px;
+  animation-delay: -1.7s;
+}
+
+/*
+  Player: left hand flipped, right hand as drawn.
+  Opponent: turned 180° to face the player, then each hand is
+  flipped the opposite way so both face inward toward the center.
+*/
+.player-row.computer .hand {
+  --hand-turn: 180deg;
+}
+
+.player-row.computer .hand--left .hand-figure {
+  transform: none;
+}
+
+.player-row.computer .hand--right .hand-figure {
+  transform: scaleX(-1);
+  transform-origin: 55px 100px;
+}
+
+/* Attack slide: the moving hand lunges toward its target, then returns */
+.hand.is-attacking {
+  z-index: 3;
+  animation: attackSlide 0.45s var(--ease);
+}
+
+.hand-art {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  transform: rotate(calc(var(--hand-turn) + var(--face-rotate)));
+  transition: transform 0.25s var(--ease);
+}
+
+.hand-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.32));
+}
+
+.hand-shadow {
+  fill: rgba(0, 0, 0, 0.28);
+}
+
+.palm-fill,
+.finger-string {
+  fill: var(--fist-skin);
+  stroke: none;
+}
+
+.palm-outline,
+.finger-string {
+  stroke: var(--fist-line);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.finger-string {
+  fill: var(--fist-skin);
+}
+
+.digit {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  opacity: 0;
+  transform: translateY(28px) scaleY(0.12);
+  transition:
+    transform 0.28s var(--ease),
+    opacity 0.22s var(--ease);
+}
+
+.digit.is-up {
+  opacity: 1;
+  transform: translateY(0) scaleY(1);
+}
+
+.hand[data-fingers="0"] .digit {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.hand .hand-label {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.35rem;
+  z-index: 2;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--bg-0) 55%, transparent);
+  border-radius: 999px;
+  padding: 0.12rem 0.4rem;
+}
+
+.hand.is-active:not(:disabled) {
+  cursor: pointer;
+}
+
+.hand.is-active:not(:disabled):hover .hand-art {
+  transform: rotate(calc(var(--hand-turn) + var(--face-rotate))) scale(1.04)
+    translateX(calc(var(--float-x) * 0.35));
+}
+
+.hand.is-selected .hand-art {
+  filter: drop-shadow(0 0 0) drop-shadow(0 0 10px color-mix(in srgb, var(--hand-selected) 55%, transparent));
+  animation: fistReady 0.9s ease-in-out infinite;
+}
+
+.hand.is-selected::after,
+.hand.is-target::after,
+.hand.is-give-target::after {
+  content: "";
+  position: absolute;
+  inset: 6% 10% 2%;
+  border-radius: 28%;
+  border: 2px solid transparent;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Redistribution target: dashed blue ring, distinct from the green attack ring */
+.hand.is-give-target::after {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--hand-give) 85%, white);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hand-give) 30%, transparent);
+  animation: targetPulse 1s var(--ease) infinite;
+}
+
+.hand.is-give-target {
+  cursor: pointer;
+}
+
+.hand.is-give-target .hand-art {
+  animation: fistTarget 1s var(--ease) infinite;
+}
+
+/* A dead hand can still receive fingers — make that visibly possible */
+.hand.is-dead.is-give-target {
+  opacity: 0.85;
+  filter: none;
+  cursor: pointer;
+  animation-play-state: running;
+}
+
+.hand.is-giving .hand-art {
+  animation: giveDip 0.5s var(--ease);
+}
+
+.hand.is-receiving .hand-art {
+  animation: receivePop 0.4s var(--ease);
+}
+
+.hand.is-selected::after {
+  border-color: color-mix(in srgb, var(--hand-selected) 80%, white);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hand-selected) 35%, transparent);
+}
+
+.hand.is-target::after {
+  border-color: color-mix(in srgb, var(--hand-target) 80%, white);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hand-target) 35%, transparent);
+  animation: targetPulse 1s var(--ease) infinite;
+}
+
+.hand.is-target .hand-art {
+  animation: fistTarget 1s var(--ease) infinite;
+}
+
+.hand.is-dead .palm-fill,
+.hand.is-dead .finger-string {
+  fill: #c5c0b4;
+}
+
+.hand.is-dead .palm-outline,
+.hand.is-dead .finger-string {
+  stroke: #8a8478;
+}
+
+.hand.is-dead {
+  opacity: 0.45;
+  filter: grayscale(0.35);
+  cursor: not-allowed;
+  animation-play-state: paused;
+}
+
+.hand:disabled:not(.is-target):not(.is-dead) {
+  cursor: default;
+  opacity: 1;
+  filter: none;
+}
+
+.hand:disabled.is-target,
+.hand:disabled.is-give-target {
+  cursor: pointer;
+}
+
+.hand.count-changed .digit.is-up {
+  animation: fingerPop 0.35s var(--ease);
+}
+
+.hand.is-hit .hand-art,
+.hand.is-target.is-hit .hand-art {
+  animation: hitShake 0.4s var(--ease);
+}
+
+.hand.count-changed .hand-art {
+  animation: fistPunch 0.4s var(--ease);
+}
+
+.mid-status {
+  text-align: center;
+  color: var(--muted);
+  min-height: 1.5rem;
+  font-size: 1.05rem;
+  transition: color 0.25s var(--ease);
+}
+
+.mid-status.is-alert {
+  color: var(--accent);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+/* Inline amount picker for redistribution */
+.give-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.4rem;
+  animation: rise 0.25s var(--ease);
+}
+
+.give-options[hidden] {
+  display: none !important;
+}
+
+.give-options.nudge {
+  animation: nudge 0.4s var(--ease);
+}
+
+.give-options-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-right: 0.25rem;
+}
+
+.give-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px dashed color-mix(in srgb, var(--hand-give) 70%, transparent);
+  background: color-mix(in srgb, var(--hand-give) 12%, var(--hand));
+  color: var(--ink);
+  transition:
+    transform 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    background 0.2s var(--ease);
+}
+
+.give-chip b {
+  color: var(--hand-give);
+  font-size: 1.05rem;
+}
+
+.give-chip small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.give-chip:hover:not(:disabled),
+.give-chip:focus-visible {
+  transform: translateY(-1px);
+  border-style: solid;
+  border-color: var(--hand-give);
+  background: color-mix(in srgb, var(--hand-give) 22%, var(--hand));
+}
+
+.give-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Finger tokens that fly from source to target during a redistribution */
+.give-token {
+  position: absolute;
+  width: 14px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--fist-skin);
+  border: 2px solid var(--fist-line);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--hand-give) 35%, transparent);
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: color-mix(in srgb, #06110e 72%, transparent);
+  border-radius: inherit;
+  animation: fadeIn 0.25s var(--ease);
+  z-index: 5;
+}
+
+.overlay[hidden] {
+  display: none !important;
+}
+
+.overlay-card {
+  width: min(100%, 26rem);
+  background: var(--bg-2);
+  border: 1px solid var(--hand-border);
+  border-radius: var(--radius);
+  padding: 1.35rem;
+  box-shadow: var(--shadow);
+  animation: rise 0.3s var(--ease);
+}
+
+.overlay-card h2 {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-display);
+}
+
+.overlay-card p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+}
+
+.analysis {
+  background: color-mix(in srgb, var(--bg-2) 92%, black);
+  border: 1px solid color-mix(in srgb, var(--hand-border) 70%, transparent);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem 1.2rem;
+  box-shadow: var(--shadow);
+  animation: rise 0.35s var(--ease);
+}
+
+.analysis[hidden] {
+  display: none !important;
+}
+
+.analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.analysis-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+#analysis-body {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: #d5e6dc;
+  overflow-x: auto;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes sparkPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes fistFloat {
+  0%,
+  100% {
+    transform: translate(calc(var(--float-x) * -0.35), 0);
+  }
+  50% {
+    transform: translate(var(--float-x), -10px);
+  }
+}
+
+@keyframes fistReady {
+  0%,
+  100% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate))) scale(1.05)
+      translateX(0);
+  }
+  50% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate))) scale(1.08)
+      translateX(calc(var(--float-x) * 0.45));
+  }
+}
+
+@keyframes fistTarget {
+  0%,
+  100% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate))) scale(1)
+      translateX(0);
+  }
+  50% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate))) scale(1.05)
+      translateX(calc(var(--float-x) * -0.3));
+  }
+}
+
+@keyframes fistPunch {
+  0% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate))) scale(1)
+      translateX(0);
+  }
+  40% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate))) scale(1.06)
+      translateX(calc(var(--float-x) * 1.3));
+  }
+  100% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate))) scale(1)
+      translateX(0);
+  }
+}
+
+@keyframes attackSlide {
+  0% {
+    transform: translate(0, 0);
+  }
+  45% {
+    transform: translate(var(--attack-dx, 0px), var(--attack-dy, 0px))
+      scale(1.06);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes hitShake {
+  0%,
+  100% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate)))
+      translateX(0);
+  }
+  30% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate)))
+      translateX(-6px);
+  }
+  60% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate)))
+      translateX(5px);
+  }
+}
+
+@keyframes giveDip {
+  0%,
+  100% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate))) scale(1);
+  }
+  40% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate) + 6deg))
+      scale(0.96);
+  }
+}
+
+@keyframes receivePop {
+  0% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate))) scale(1);
+  }
+  45% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate) - 4deg))
+      scale(1.1);
+  }
+  100% {
+    transform: rotate(calc(var(--hand-turn) + var(--face-rotate))) scale(1);
+  }
+}
+
+@keyframes arrowNudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+@keyframes fingerPop {
+  0% {
+    transform: translateY(18px) scaleY(0.55);
+  }
+  60% {
+    transform: translateY(-4px) scaleY(1.08);
+  }
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes targetPulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes countPop {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .app {
+    width: min(100% - 1rem, 920px);
+    padding-top: 1rem;
+  }
+
+  .board {
+    padding: 1rem;
+  }
+
+  .meta {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

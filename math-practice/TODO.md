@@ -11,11 +11,11 @@ a development-log update, and a Git commit/push after validation.
 - [x] 5. Personalized mistake review and mastery (12–14)
 - [x] 6. Statistics and progress views (10, 15)
 - [x] 7. Accessibility, responsive design, comprehensive tests, and performance (16–17, 20–21)
-- [ ] 8. Production build, hosting configuration, public deployment, and submission materials (22)
+- [x] 8. Production build, hosting configuration, public deployment, and submission materials (22)
 
 ## External/manual verification
 
-- [ ] Verify the deployed public URL and route refreshes.
+- [x] Verify the deployed public URL and route refreshes.
 - [ ] Real Safari/Edge and physical-device checks, screen-reader listening, and audible sound check.
 - [ ] Student reviews the report, adds their reflection/screenshots, and submits to HuskyCT.
 
@@ -24,8 +24,9 @@ a development-log update, and a Git commit/push after validation.
 Milestones 1–7 have implemented code and automated verification. Real screen-reader
 listening, physical devices, and Safari/Edge checks above remain manual.
 Milestone 8 has production configuration, README, report and evidence drafts.
-Creating and checking the public Netlify site is pending authentication/network access.
-No public deployment URL has been claimed.
+The app is deployed at https://math-meadow-tranpaul707.netlify.app. All 17 browser
+tests also passed on that public origin. The first deployment used the Netlify API;
+GitHub continuous deployment is not yet connected.
 
 ### Milestone 8 detail
 
@@ -33,4 +34,5 @@ No public deployment URL has been claimed.
 - [x] Repository-root and app-local Netlify configuration, including SPA fallback.
 - [x] README, testing record, screenshots, report draft, and AI evidence.
 - [x] Secure Netlify authentication/network requirements saved in environment settings.
-- [ ] Create/connect the Netlify project and verify its real public URL.
+- [x] Create the Netlify project, deploy, and verify its real public URL.
+- [ ] Optional: connect Netlify to GitHub for automatic deployments on future pushes.

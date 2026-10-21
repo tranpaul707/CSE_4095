@@ -39,9 +39,27 @@ results are not used as evidence.
 3. After a failed storage write, a later answer-selection update could omit earlier
    unsaved history. The provider tracks failed persistence and retries the full state.
 
+## Public deployment verification
+
+The same 17 production-browser tests passed on
+https://math-meadow-tranpaul707.netlify.app after deployment. Homepage, setup,
+session, summary, statistics, and settings routes also returned HTTP 200 to
+unauthenticated HTTPS requests. Direct routes, refresh persistence, full sessions,
+last-question mistakes, mastery, defaults, confirmations, responsive layouts, and
+accessibility were checked on the actual public origin.
+
+Reproduce against the public site with:
+
+```sh
+PLAYWRIGHT_BASE_URL=https://math-meadow-tranpaul707.netlify.app npm run test:e2e
+```
+
+This option uses the existing public deployment rather than starting a local server.
+The cloud browser required write permission for its existing NSS trust database so
+it could load the environment proxy CA. TLS verification remained enabled.
+
 ## Manual/external checks still required
 
-- Actual public Netlify deployment, all direct routes, and refresh on the public origin.
 - Listening to the sounds on real hardware, including mobile autoplay behavior.
 - A real screen reader, physical-device interaction, and browser zoom/larger system fonts.
 - Safari, Firefox, and Microsoft Edge engine testing. Chromium automation does not

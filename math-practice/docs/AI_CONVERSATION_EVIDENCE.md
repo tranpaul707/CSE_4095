@@ -51,3 +51,12 @@ The agent prepared repository-root and app-local Netlify build/routing configura
 It checked existing credentials and connectivity, found missing Netlify authentication
 and proxy 403 responses, and saved secure environment requirements. A public
 site must still be created and tested after account access is available.
+
+## Deployment completion
+
+After the student supplied the token securely, the agent verified Netlify API
+authentication, created the site, and deployed the tested static build. The site
+initially required Netlify login; site-specific access protection was removed for
+the public assignment. The same 17 browser tests passed on the real public URL,
+with TLS verification preserved. The final URL is
+https://math-meadow-tranpaul707.netlify.app.

@@ -117,3 +117,22 @@ changes. No known failing automated checks remain. Release documentation and the
 Netlify configuration are committed with the tested application. The deployable
 static ZIP is available at /workspace/artifacts/math-meadow-netlify.zip; creating
 the Netlify site and public-origin testing still require account/network access.
+
+## Public Netlify release verified
+
+After the student saved the secure token binding, the Netlify /user endpoint returned
+200 and the account had no existing sites. Created math-meadow-tranpaul707 in the
+student's team and deployed the tested production ZIP. The deploy reached ready.
+The new site initially inherited Netlify login protection; disabled the site's
+sso_login setting for the intended public assignment. All six app routes then
+returned 200 without login.
+
+Cloud Chromium initially could not load its existing trusted proxy certificates
+because NSS requires a read/write database. Granted turn-scoped write access to
+the existing /home/agent/.pki/nssdb; no certificate checking was disabled.
+All 17 Playwright tests subsequently passed against the actual public URL:
+https://math-meadow-tranpaul707.netlify.app. Formatting and lint also pass.
+Deployment metadata is in docs/netlify-deployment.json. The initial release uses
+API/ZIP deployment; the GitHub integration still needs an account connection for
+automatic future builds. Report review and physical-device/screen-reader checks
+remain student actions.

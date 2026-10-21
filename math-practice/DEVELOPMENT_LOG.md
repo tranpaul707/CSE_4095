@@ -52,3 +52,13 @@ implementation is waiting for those files so the official phases and detailed
 requirements can govern the work. The working specification and difficulty ranges
 remain provisional. No push, public deployment, report submission, or full
 specification-compliance claim has been made.
+
+## Official specification implementation: foundation and arithmetic
+Replaced the provisional shell with React, Vite, TypeScript, and React Router.
+Saved the supplied specification and original 22-phase checklist. Implemented the
+four official difficulty levels, zero multiplication facts, larger multiplication,
+valid integer division, operation-specific distractors, and nearby/reversed/inverse
+review candidates. Added pure transitions enforcing selection, flip, then explicit
+self-report. The earlier automatic-scoring design is superseded.
+The React shell passes the production browser smoke test. Arithmetic/state tests
+are run before this milestone is committed; detailed final results follow later.

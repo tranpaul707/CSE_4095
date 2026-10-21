@@ -1,63 +1,19 @@
-# Math Practice — implementation checklist
+# Math Meadow — implementation milestones
 
-This provisional plan is derived from the pasted assignment brief. The instructor's
-`specification.md`, `TODO.md`, and example PDF transcript have not been supplied.
-Reconcile this plan with those references before claiming full specification compliance.
-The student will provide the references; further feature implementation is pending them.
-Checked engine tasks reflect the provisional ranges and may need revision.
-The state layer is unit-tested but is not yet connected to an interactive UI.
+The supplied specification.md and docs/INSTRUCTOR_TODO.md are the source requirements.
+The original checklist is retained unchanged for reference. Each milestone includes testing,
+a development-log update, and a Git commit/push after validation.
 
-## Phase 1 — requirements and foundation
-- [x] Read the assignment and map its features and deliverables.
-- [x] Record assumptions and acceptance criteria in `specification.md`.
-- [x] Create a standalone static web project with install, dev, build, and test commands.
-- [ ] Create a responsive, accessible shell and navigation.
-- [x] Begin a factual AI development log and make an initial milestone commit.
+- [ ] 1. React foundation and navigation (original phases 1–2)
+- [x] 2. Arithmetic and answer generation (4–5)
+- [ ] 3. Practice setup, cards, sessions, and summaries (3, 6–8)
+- [ ] 4. Persistence, working settings, recovery, and error handling (9, 11, 18–19)
+- [ ] 5. Personalized mistake review and mastery (12–14)
+- [ ] 6. Statistics and progress views (10, 15)
+- [ ] 7. Accessibility, responsive design, comprehensive tests, and performance (16–17, 20–21)
+- [ ] 8. Production build, hosting configuration, public deployment, and submission materials (22)
 
-## Phase 2 — arithmetic engine
-- [x] Generate addition, subtraction, multiplication, and division questions.
-- [x] Implement three age-appropriate difficulty levels with documented ranges.
-- [x] Keep subtraction nonnegative and division exact with nonzero divisors.
-- [x] Generate four distinct answer options with exactly one correct answer.
-- [x] Test arithmetic invariants, difficulty boundaries, and similar-question generation.
-
-## Phase 3 — question cards and sessions
-- [ ] Configure operations, difficulty, and session length.
-- [ ] Support multiple-choice answers, reveal, and explicit correct/incorrect self-assessment.
-- [ ] Show clear feedback and an explanation, then advance deliberately.
-- [ ] Prevent duplicate scoring and show session progress.
-- [ ] Finish with an accurate summary and retry/new-session controls.
-
-## Phase 4 — mistakes and targeted review
-- [ ] Save incorrect questions and answers.
-- [ ] Review saved mistakes and practice exact questions or similar questions.
-- [ ] Track review outcomes and resolve a mistake after a correct review.
-- [ ] Handle an empty mistake collection clearly.
-
-## Phase 5 — statistics and persistence
-- [ ] Save attempts and completed session history in versioned localStorage.
-- [ ] Show totals, accuracy, per-operation results, and recent sessions.
-- [ ] Restore an unfinished session after reload without duplicate scoring.
-- [ ] Handle corrupt/unavailable storage and provide a confirmed reset control.
-
-## Phase 6 — validation and polish
-- [x] Run automated engine/state tests covering all four operations and levels.
-- [ ] Exercise actual browser flows: cards, scoring, summary, review, statistics, reload.
-- [ ] Check keyboard controls and mobile layout; inspect for runtime errors.
-- [ ] Run a production build and smoke-test the built application.
-- [ ] Record real failures, fixes, commands, and results in `DEVELOPMENT_LOG.md`.
-
-## Phase 7 — GitHub and public deployment
-- [x] Write README instructions for local development, tests, build, and deployment.
-- [ ] Add static-host configuration and make meaningful milestone commits.
-- [ ] Push source to the chosen GitHub repository using available authorization.
-- [ ] Deploy to a public host when hosting access is available.
-- [ ] Test the actual public URL, refresh, navigation, and data persistence.
-
-## Phase 8 — submission materials
-- [ ] Prepare a report draft grounded in the recorded implementation and test results.
-- [ ] Collect initial request, feature refinement, and debugging/testing conversation evidence.
-- [ ] Have the student add their own reflection and review the report (2–3 pages).
-- [ ] Fill in verified GitHub and public app URLs.
-- [ ] Reconcile all requirements with the missing instructor reference materials.
-- [ ] Submit the four deliverables through HuskyCT (student action).
+## External/manual verification
+- [ ] Verify the deployed public URL and route refreshes.
+- [ ] Real Safari/Edge and physical-device checks, screen-reader listening, and audible sound check.
+- [ ] Student reviews the report, adds their reflection/screenshots, and submits to HuskyCT.

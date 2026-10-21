@@ -7,21 +7,10 @@
     <meta name="description" content="Grow your number skills with friendly arithmetic practice, mistake review, and progress tracking.">
     <title>Math Meadow · A little practice, a lot of growth</title>
     <link rel="stylesheet" href="/src/styles.css">
-    <script type="module" src="/src/app.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to practice</a>
-    <header class="site-header">
-      <a class="brand" href="#practice"><span class="brand-icon" aria-hidden="true">✳</span> math meadow<span class="brand-dot">.</span></a>
-      <nav aria-label="Main navigation">
-        <a href="#practice" data-page="practice">Practice</a>
-        <a href="#mistakes" data-page="mistakes">Mistakes <span id="mistake-count" class="nav-count">0</span></a>
-        <a href="#statistics" data-page="statistics">Statistics</a>
-      </nav>
-      <span class="header-note">Small steps. Big possibilities.</span>
-    </header>
-    <div id="storage-warning" class="warning" role="status" hidden></div>
-    <main id="main" tabindex="-1"></main>
-    <footer><span>Made for curious minds.</span><span>Progress stays in this browser. No account needed.</span><span class="footer-flower" aria-hidden="true">✳</span></footer>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div id="root"></div>
   </body>
 </html>

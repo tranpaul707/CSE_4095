@@ -3,20 +3,23 @@
 This provisional plan is derived from the pasted assignment brief. The instructor's
 `specification.md`, `TODO.md`, and example PDF transcript have not been supplied.
 Reconcile this plan with those references before claiming full specification compliance.
+The student will provide the references; further feature implementation is pending them.
+Checked engine tasks reflect the provisional ranges and may need revision.
+The state layer is unit-tested but is not yet connected to an interactive UI.
 
 ## Phase 1 — requirements and foundation
 - [x] Read the assignment and map its features and deliverables.
 - [x] Record assumptions and acceptance criteria in `specification.md`.
-- [ ] Create a standalone static web project with install, dev, build, and test commands.
+- [x] Create a standalone static web project with install, dev, build, and test commands.
 - [ ] Create a responsive, accessible shell and navigation.
-- [ ] Begin a factual AI development log and make an initial milestone commit.
+- [x] Begin a factual AI development log and make an initial milestone commit.
 
 ## Phase 2 — arithmetic engine
-- [ ] Generate addition, subtraction, multiplication, and division questions.
-- [ ] Implement three age-appropriate difficulty levels with documented ranges.
-- [ ] Keep subtraction nonnegative and division exact with nonzero divisors.
-- [ ] Generate four distinct answer options with exactly one correct answer.
-- [ ] Test arithmetic invariants, difficulty boundaries, and similar-question generation.
+- [x] Generate addition, subtraction, multiplication, and division questions.
+- [x] Implement three age-appropriate difficulty levels with documented ranges.
+- [x] Keep subtraction nonnegative and division exact with nonzero divisors.
+- [x] Generate four distinct answer options with exactly one correct answer.
+- [x] Test arithmetic invariants, difficulty boundaries, and similar-question generation.
 
 ## Phase 3 — question cards and sessions
 - [ ] Configure operations, difficulty, and session length.
@@ -38,14 +41,14 @@ Reconcile this plan with those references before claiming full specification com
 - [ ] Handle corrupt/unavailable storage and provide a confirmed reset control.
 
 ## Phase 6 — validation and polish
-- [ ] Run automated engine/state tests covering all four operations and levels.
+- [x] Run automated engine/state tests covering all four operations and levels.
 - [ ] Exercise actual browser flows: cards, scoring, summary, review, statistics, reload.
 - [ ] Check keyboard controls and mobile layout; inspect for runtime errors.
 - [ ] Run a production build and smoke-test the built application.
 - [ ] Record real failures, fixes, commands, and results in `DEVELOPMENT_LOG.md`.
 
 ## Phase 7 — GitHub and public deployment
-- [ ] Write README instructions for local development, tests, build, and deployment.
+- [x] Write README instructions for local development, tests, build, and deployment.
 - [ ] Add static-host configuration and make meaningful milestone commits.
 - [ ] Push source to the chosen GitHub repository using available authorization.
 - [ ] Deploy to a public host when hosting access is available.

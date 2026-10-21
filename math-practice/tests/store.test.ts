@@ -73,3 +73,21 @@ it('archives old attempts while preserving lifetime totals and operation/difficu
   expect(totalsFor(s).byDifficulty[1].attempted).toBe(MAX_ATTEMPTS + 1);
   const storage = memory(); expect(save(storage, s)).toBe(''); expect(load(storage).warning).toBe('');
 });
+
+it('Practice Again creates a fresh active session without the old completion timestamp', () => {
+  const finished = endSession(answer(start()));
+  const next = startSession(finished, finished.summary!);
+  expect(next.active!.session.completedAt).toBeUndefined();
+  expect(next.active!.session.id).not.toBe(finished.summary!.id);
+  expect(next.active!.session.attempted).toBe(0);
+  const storage = memory(); save(storage, next); expect(load(storage).state.active).toEqual(next.active);
+});
+
+it('large-history statistics are quick to compute and storage remains bounded', () => {
+  const s = answer(start()); const sample = s.attempts[0];
+  s.attempts = Array.from({ length: MAX_ATTEMPTS }, (_, i) => ({ ...sample, id: `measure-${i}`, question: { ...sample.question, id: `measure-${i}` } }));
+  const before = performance.now(); const totals = totalsFor(s); const elapsed = performance.now() - before;
+  expect(totals.attempted).toBe(MAX_ATTEMPTS); expect(elapsed).toBeLessThan(250);
+  const bytes = new TextEncoder().encode(JSON.stringify(s)).byteLength;
+  expect(bytes).toBeLessThan(4_000_000);
+});

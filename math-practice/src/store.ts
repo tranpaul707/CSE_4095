@@ -1,5 +1,5 @@
-import type { ActiveSession, AppState, Attempt, Config, Counts, Difficulty, Operation, Pattern, Question, Session, Settings, Totals } from './types';
-import { calculate, DIFFICULTIES, generateQuestion, id, OPS, priority, shuffle, signature, similarQuestion, validQuestion } from './math';
+import type { ActiveSession, AppState, Attempt, Config, Counts, Difficulty, Pattern, Question, Session, Settings, Totals } from './types';
+import { DIFFICULTIES, generateQuestion, id, OPS, priority, shuffle, signature, similarQuestion, validQuestion } from './math';
 export const PREFIX = 'mathPractice.';
 export const MAX_ATTEMPTS = 5000;
 export const DEFAULT_SETTINGS: Settings = {
@@ -7,16 +7,16 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultOperations: [...OPS], defaultDifficulty: 1, defaultLength: 10, masteryThreshold: 3,
 };
 const counts = (): Counts => ({ attempted: 0, correct: 0, incorrect: 0 });
-export const emptyTotals = (): Totals => ({ ...counts(), byOperation: Object.fromEntries(OPS.map(op => [op, counts()])) as Totals['byOperation'], byDifficulty: Object.fromEntries(DIFFICULTIES.map(level => [level, counts()])) as Totals['byDifficulty'], reviewCount: 0 });
+export const emptyTotals = (): Totals => ({ ...counts(), byOperation: Object.fromEntries(OPS.map(op => [op, counts()])) as Totals['byOperation'], byDifficulty: Object.fromEntries(DIFFICULTIES.map(level => [level, counts()])) as Totals['byDifficulty'], reviewCount: 0, reviewCorrect: 0 });
 export const initialState = (): AppState => ({ settings: structuredClone(DEFAULT_SETTINGS), attempts: [], sessions: [], patterns: [], archive: emptyTotals(), active: null, summary: null });
 export const accuracy = (value: Counts) => value.attempted ? Math.round(value.correct / value.attempted * 100) : 0;
 function addAttempt(totals: Totals, attempt: Attempt) {
   for (const group of [totals, totals.byOperation[attempt.question.operation], totals.byDifficulty[attempt.question.difficulty]]) {
     group.attempted++; if (attempt.selfReportedCorrect) group.correct++; else group.incorrect++;
   }
-  if (attempt.question.source === 'mistake-review') totals.reviewCount++;
+  if (attempt.question.source === 'mistake-review') { totals.reviewCount++; if (attempt.selfReportedCorrect) totals.reviewCorrect++; }
 }
-export function totalsFor(state: AppState): Totals {
+export function totalsFor(state: Pick<AppState, 'attempts' | 'archive'>): Totals {
   const totals = structuredClone(state.archive);
   for (const attempt of state.attempts) addAttempt(totals, attempt);
   return totals;
@@ -37,7 +37,7 @@ export function startSession(state: AppState, config: Config): AppState {
   if (!validConfig(config)) throw new Error('Choose at least one operation and a difficulty level.');
   const question = nextQuestion(state, config);
   if (!question) throw new Error('No active mistakes to review. Try regular practice first.');
-  const session: Session = { ...config, id: id(), startedAt: new Date().toISOString(), attempted: 0, correct: 0, incorrect: 0, reviewCount: 0 };
+  const session: Session = { operations: [...config.operations], difficulty: config.difficulty, length: config.length, review: config.review, id: id(), startedAt: new Date().toISOString(), attempted: 0, correct: 0, incorrect: 0, reviewCount: 0 };
   return { ...state, summary: null, active: { session, question, selected: null, flipped: false, feedback: null, recent: [signature(question)] } };
 }
 export function selectAnswer(state: AppState, value: number): AppState {
@@ -92,7 +92,6 @@ export function updateSettings(state: AppState, settings: Settings): AppState {
   return { ...state, settings, patterns: state.patterns.map(p => ({ ...p, mastered: p.similarCorrectCount >= settings.masteryThreshold })) };
 }
 export function resetHistory(state: AppState): AppState { return { ...initialState(), settings: state.settings }; }
-export function actualAnswerCorrect(attempt: Attempt) { return attempt.selectedAnswer === calculate(attempt.question.operation, attempt.question.firstOperand, attempt.question.secondOperand); }
 
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const whole = (v: unknown) => typeof v === 'number' && Number.isSafeInteger(v) && v >= 0;
@@ -109,7 +108,7 @@ function validTotals(v: unknown): v is Totals {
   if (!validCounts(v) || !object(v)) return false;
   const t = v as unknown as Totals;
   return object(t.byOperation) && object(t.byDifficulty) && OPS.every(op => validCounts(t.byOperation[op])) && DIFFICULTIES.every(d => validCounts(t.byDifficulty[d]))
-    && whole(t.reviewCount) && t.reviewCount <= t.attempted
+    && whole(t.reviewCount) && t.reviewCount <= t.attempted && whole(t.reviewCorrect) && t.reviewCorrect <= t.reviewCount
     && OPS.reduce((sum, op) => sum + t.byOperation[op].attempted, 0) === t.attempted
     && DIFFICULTIES.reduce((sum, d) => sum + t.byDifficulty[d].attempted, 0) === t.attempted;
 }
@@ -171,9 +170,12 @@ export function load(storage: Pick<Storage, 'getItem'>): { state: AppState; warn
   }
   return { state, warning: warnings.length ? `Some saved ${warnings.join(', ')} data could not be loaded. Other progress is still available.` : '' };
 }
-export function save(storage: Pick<Storage, 'setItem'>, state: AppState): string {
+export function save(storage: Pick<Storage, 'setItem'>, state: AppState, previous?: AppState): string {
   try {
-    for (const [key, value] of Object.entries({ settings: state.settings, attempts: state.attempts, sessions: state.sessions, mistakePatterns: state.patterns, statistics: state.archive, activeSession: state.active, summary: state.summary })) storage.setItem(PREFIX + key, JSON.stringify(value));
+    const prior = previous ? { settings: previous.settings, attempts: previous.attempts, sessions: previous.sessions, mistakePatterns: previous.patterns, statistics: previous.archive, activeSession: previous.active, summary: previous.summary } : null;
+    for (const [key, value] of Object.entries({ settings: state.settings, attempts: state.attempts, sessions: state.sessions, mistakePatterns: state.patterns, statistics: state.archive, activeSession: state.active, summary: state.summary })) {
+      if (!prior || value !== prior[key as keyof typeof prior]) storage.setItem(PREFIX + key, JSON.stringify(value));
+    }
     storage.setItem(PREFIX + 'version', '1'); return '';
   } catch { return 'Your practice can continue, but progress could not be saved. Browser storage may be full or unavailable.'; }
 }

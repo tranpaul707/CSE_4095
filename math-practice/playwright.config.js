@@ -15,6 +15,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run build && npm run preview',
     port: 4174,
+    stdout: 'pipe',
     env: { PORT: '4174' },
     reuseExistingServer: false,
   },

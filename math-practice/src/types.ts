@@ -32,7 +32,7 @@ export interface Settings {
 }
 export interface Counts { attempted: number; correct: number; incorrect: number }
 export interface Totals extends Counts {
-  byOperation: Record<Operation, Counts>; byDifficulty: Record<Difficulty, Counts>; reviewCount: number;
+  byOperation: Record<Operation, Counts>; byDifficulty: Record<Difficulty, Counts>; reviewCount: number; reviewCorrect: number;
 }
 export interface AppState {
   settings: Settings; attempts: Attempt[]; sessions: Session[]; patterns: Pattern[];

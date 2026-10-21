@@ -5,8 +5,12 @@ import { expect, it } from 'vitest';
 import { DifficultySelector, Metrics, OperationSelector } from '../src/components';
 import type { Difficulty, Operation } from '../src/types';
 it('operation selection is accessible, supports multiple choices and select-all', async () => {
-  function Harness() { const [value, setValue] = useState<Operation[]>([]); return <OperationSelector value={value} onChange={setValue} />; }
-  render(<Harness />); const user = userEvent.setup();
+  function Harness() {
+    const [value, setValue] = useState<Operation[]>([]);
+    return <OperationSelector value={value} onChange={setValue} />;
+  }
+  render(<Harness />);
+  const user = userEvent.setup();
   await user.click(screen.getByRole('button', { name: 'Addition' }));
   await user.click(screen.getByRole('button', { name: 'Division' }));
   expect(screen.getByRole('button', { name: 'Addition' })).toHaveAttribute('aria-pressed', 'true');
@@ -15,8 +19,12 @@ it('operation selection is accessible, supports multiple choices and select-all'
   expect(screen.getAllByRole('button', { pressed: true })).toHaveLength(4);
 });
 it('difficulty selection switches among the four official levels', async () => {
-  function Harness() { const [value, setValue] = useState<Difficulty>(1); return <DifficultySelector value={value} onChange={setValue} />; }
-  render(<Harness />); const user = userEvent.setup();
+  function Harness() {
+    const [value, setValue] = useState<Difficulty>(1);
+    return <DifficultySelector value={value} onChange={setValue} />;
+  }
+  render(<Harness />);
+  const user = userEvent.setup();
   await user.click(screen.getByRole('radio', { name: /Advanced/ }));
   expect(screen.getByRole('radio', { name: /Advanced/ })).toBeChecked();
   expect(screen.getByRole('radio', { name: /Beginner/ })).not.toBeChecked();

@@ -1,0 +1,5 @@
+:root { font-family: ui-sans-serif, system-ui, sans-serif; color: #223e33; background: #f8f7f0; }
+body { margin: 0; }
+.site-header, main, footer { max-width: 1160px; margin: auto; padding: 28px; }
+nav { display: flex; gap: 24px; }
+a { color: inherit; }

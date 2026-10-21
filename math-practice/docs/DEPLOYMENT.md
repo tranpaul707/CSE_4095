@@ -1,54 +1,63 @@
 # Netlify deployment
 
-## Prepared configuration
+**Public app:** https://math-meadow-tranpaul707.netlify.app
 
-The root `netlify.toml` is discoverable when importing the repository. It builds
-`math-practice/` and publishes `math-practice/dist/`. A matching app-local config
-supports deployments where the project base has already been set manually.
-The build runs on Node 24. `public/_redirects` is copied to `dist/_redirects`
-and maps client routes to `index.html`.
+**Netlify project:** https://app.netlify.com/projects/math-meadow-tranpaul707
 
-The application itself does not require environment variables or secrets.
-A Netlify deployment token is only needed if deploying from this cloud environment.
-Never put it in the repository, a VITE_ variable, or a chat message.
+The first production release was published through the Netlify API from the tested
+static ZIP. It is publicly accessible without Netlify login. The homepage and all
+application routes return HTTP 200. See TESTING.md for the live-browser results
+and netlify-deployment.json for the non-secret site/deployment IDs.
 
-## Connect the GitHub repository (recommended)
+## Build configuration
 
-1. Sign in to Netlify and choose Add new project → Import an existing project.
-2. Connect GitHub and select `tranpaul707/CSE_4095`.
-3. Select the `main` production branch.
-4. Confirm base `math-practice`, build `npm run build`, publish `dist`.
-5. Deploy. Inspect the build log for an actual Vite build and a published index.html.
+The root netlify.toml builds math-practice/ and publishes math-practice/dist/.
+The app-local configuration supports projects whose base is already set manually.
+Node.js 24 is selected. public/_redirects is copied into dist and supplies the
+SPA fallback for direct navigation and refresh.
 
-Future pushes to main will deploy automatically after the connection is established.
-No Netlify token is needed by the app or by GitHub source code for this approach.
+| Setting           | Value                |
+| ----------------- | -------------------- |
+| GitHub repository | tranpaul707/CSE_4095 |
+| Production branch | main                 |
+| Base directory    | math-practice        |
+| Build command     | npm run build        |
+| Publish directory | dist                 |
 
-## Deploy from this cloud environment
+## Enable automatic GitHub deployments
 
-The environment currently has no Netlify authentication and requests to
-`api.netlify.com` and `app.netlify.com` receive a proxy 403. Requirements were saved
-in the environment settings draft:
+The initial API/ZIP deployment does not establish a GitHub repository connection.
+To deploy automatically after future pushes:
 
-- Allowed destinations: `api.netlify.com`, `app.netlify.com`, `*.netlify.app`.
-- Secure requirement: `NETLIFY_AUTH_TOKEN`, scoped to `api.netlify.com`.
+1. Open the Netlify project above while signed in.
+2. Open project configuration and its build/deploy settings, then link a Git repository.
+3. Authorize the Netlify GitHub integration for tranpaul707/CSE_4095.
+4. Select main and confirm the build settings in the table above.
+5. Trigger a build and verify the published version.
 
-To have the agent create/deploy the site, supply the Netlify token securely in
-that environment setting, review/save the changes and publish the environment.
-Saving a draft alone does not apply these settings or create a Netlify site.
-The agent must then retry API access, identify the correct Netlify account/site,
-deploy the verified dist output, and verify the resulting public URL.
-For an existing site, provide its name or URL; do not paste credentials in chat.
+This account authorization is separate from the Netlify API token. Until it is
+connected, future code changes need another explicit deployment of the built dist
+output; a Git push alone does not update the public site.
 
-## Public-site acceptance checks
+## Cloud deployment access
 
-These remain pending until there is a real public URL:
+The application itself requires no credentials or environment variables.
+NETLIFY_AUTH_TOKEN is a secure deployment-only environment binding scoped to
+api.netlify.com. Never place it in source code, a VITE_ variable, or chat.
+The environment permits api.netlify.com, app.netlify.com, and *.netlify.app.
 
-- Homepage and all five practice/settings/statistics routes load.
-- Direct navigation and refresh on `/statistics` and `/practice/setup` work.
-- Finish a five-question session with the final answer self-reported wrong.
-- Verify summary totals and enabled mistake review; refresh and verify again.
-- Practice related questions and verify mastery.
-- Change settings and confirm they persist after reopening the browser.
-- Test mobile/tablet layouts, console errors, audio, and keyboard interaction.
+A new Netlify site initially inherited login protection. The site-specific
+sso_login setting was disabled for this public assignment site. No login should
+appear when visiting the production URL.
 
-A successful local build or Netlify configuration file is not proof of public deployment.
+The cloud Chromium browser also needed write access to its existing NSS database
+at /home/agent/.pki/nssdb to load the already trusted environment proxy CA. Tests
+preserved certificate verification; no certificate errors were bypassed.
+
+## Release checks
+
+- Every app route loads directly and after refresh.
+- Full sessions, final-question mistakes, summaries, review mastery, and statistics work.
+- Settings and active-card state survive refresh on the public origin.
+- Confirmed reset, keyboard controls, layouts, and accessibility are tested.
+- Real-device listening, screen-reader review, and other browser engines remain manual.

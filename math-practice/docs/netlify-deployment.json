@@ -1,0 +1,12 @@
+{
+  "id": "361d41ec-9850-4cd5-bd30-022bedf3d827",
+  "name": "math-meadow-tranpaul707",
+  "url": "http://math-meadow-tranpaul707.netlify.app",
+  "ssl_url": "https://math-meadow-tranpaul707.netlify.app",
+  "admin_url": "https://app.netlify.com/projects/math-meadow-tranpaul707",
+  "deploy_id": "6ad924c93ed9976d6d287f70",
+  "state": "ready",
+  "application_commit": "f5e48c90eb11c8f492349e48af690b3cdcb4a03f",
+  "method": "Netlify API ZIP production deploy",
+  "github_auto_deploy": false
+}

@@ -4,6 +4,8 @@ A Math Practice application for children ages 7–12, built with React, TypeScri
 React Router, and Vite. No account, backend, API key, analytics, or external font
 service is required to use the app.
 
+Live application: **https://math-meadow-tranpaul707.netlify.app**
+
 Source folder: `math-practice/` in `tranpaul707/CSE_4095`.
 
 ## Run locally
@@ -91,8 +93,8 @@ The repository-root `netlify.toml` selects this folder automatically:
 
 `public/_redirects` also supplies the SPA fallback. React routes such as
 `/statistics` and `/practice/setup` must load correctly when opened directly.
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the remaining account connection
-and public-site verification steps. Public deployment has not been completed yet.
+The application is publicly deployed. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+for deployment details and connecting GitHub for automatic future builds.
 
 ## Assignment records
 
@@ -102,4 +104,4 @@ The supplied [specification.md](specification.md) and
 [report draft](docs/DEVELOPMENT_REPORT_DRAFT.md), and
 [AI evidence](docs/AI_CONVERSATION_EVIDENCE.md) support the submission.
 The student must review the report, add their own reflection/screenshots, supply
-verified deployment details, and submit through HuskyCT.
+review deployment details, and submit through HuskyCT.

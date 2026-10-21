@@ -7,7 +7,7 @@ manual testing or deployment as complete until you have performed it.
 
 **Repository:** https://github.com/tranpaul707/CSE_4095/tree/main/math-practice
 
-**Deployed application:** Pending Netlify account connection and public verification.
+**Deployed application:** https://math-meadow-tranpaul707.netlify.app
 
 ## Development approach
 
@@ -92,8 +92,7 @@ inspected. TypeScript, lint, formatting, and the production build are release ch
 
 Automated checks do not prove that audio is audible on every device or that a real
 screen reader reads every transition naturally. Physical-device listening and
-Safari/Edge testing remain manual checks. Public-site checks remain pending until
-Netlify account access is available.
+Safari/Edge testing remain manual checks. Public-site checks are recorded in docs/TESTING.md after Netlify deployment.
 
 ## Persistence and release
 
@@ -105,10 +104,13 @@ Reset Statistics preserves settings; Clear All Data resets the application's own
 keys without clearing unrelated browser data.
 
 Netlify configuration selects math-practice as the base and dist as the output,
-with an SPA fallback so deep links can load after refresh. The running cloud
-machine currently lacks Netlify authentication and its network proxy blocks the
-Netlify API/dashboard. Secure authentication and required domain additions were
-saved in environment settings; creating and testing a public site remains pending.
+with an SPA fallback so deep links can load after refresh. The first deployment was initially blocked by missing authentication and network
+access. After the student supplied a token securely and applied the environment
+settings, the agent created the Netlify site and published the tested production
+ZIP. The new site initially required Netlify login; this site-specific protection
+was disabled to meet the public-access requirement. All app routes then returned
+HTTP 200 without login. GitHub continuous deployment remains an optional account
+connection; the initial release was deployed through the Netlify API.
 
 ## Personal reflection — complete in your own words
 

@@ -51,3 +51,18 @@ Production verification: started Gunicorn on local port 5050, served the fronten
 created and retrieved games at all difficulties, played each through to completion
 over real HTTP, and verified active secrecy and terminal reveal. All passed.
 Render account/service creation and public HTTPS verification remain pending.
+
+## Phase 7 — Submission preparation
+Prepared README, local and optional browser testing commands, deployment guide,
+a report draft with factual results and real conversation prompts, and a demo
+outline/checklist. Deployment and personal reflection are explicitly unfinished.
+All phase commits were pushed to the hangman-web-app branch in the existing
+GitHub repository. Main and the other course applications were not modified.
+
+## Remaining student/account steps
+- Run locally, play, and inspect a request/response in Chrome Developer Tools.
+- Create the Render Web Service using docs/DEPLOYMENT.md; share the HTTPS URL
+  so deployment verification can be completed. No Render credentials or connected
+  browser-control tool were available in this session.
+- Finish the report with actual deployment results and personal reflection, export
+  its PDF, record the demo, and submit through HuskyCT.

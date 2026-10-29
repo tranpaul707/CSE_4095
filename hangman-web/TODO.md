@@ -44,13 +44,13 @@ Verification: compare the plan with required components and submission criteria.
 ## Phase 6 — Deployment
 - [x] Prepare dependencies, Gunicorn, and Render settings for this monorepo.
 - [x] Verify production start command locally.
-- [ ] Push phase commits to GitHub.
+- [x] Push phase commits to GitHub.
 - [ ] Create/connect hosting service and obtain public HTTPS URL.
 - [ ] Play a complete game on the public service and verify required API routes.
 
 ## Phase 7 — Submission
-- [ ] README: installation, architecture, API, tests, deployment, limitations.
-- [ ] Prepare factual development notes and demo/report guidance.
+- [x] README: installation, architecture, API, tests, deployment, limitations.
+- [x] Prepare factual development notes and demo/report guidance.
 - [ ] Student: finalize 1–2 page PDF report including personal reflection.
 - [ ] Student: record 2–3 minute demo including Developer Tools.
 - [ ] Submit repository URL, live URL, PDF, and recording through HuskyCT.

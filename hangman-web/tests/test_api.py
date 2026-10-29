@@ -111,3 +111,13 @@ class ApiTests(unittest.TestCase):
         response = self.client.post("/api/games", json={"difficulty": "a" * 3000})
         self.assertEqual(response.status_code, 413)
         self.assertIn("error", response.json)
+
+    def test_frontend_assets_and_word_lists_are_not_served(self):
+        with self.client.get("/") as response:
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"Hangman", response.data)
+        for path in ("/static/app.js", "/static/style.css"):
+            with self.client.get(path) as response:
+                self.assertEqual(response.status_code, 200)
+        for path in ("/words/easy.txt", "/static/../words/easy.txt", "/game.py"):
+            self.assertEqual(self.client.get(path).status_code, 404)

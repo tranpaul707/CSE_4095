@@ -31,3 +31,14 @@ The browser contains presentation only and re-fetches state after failed guesses
 to recover if a response was lost. Controls disable while a request is pending.
 Verification: JavaScript syntax check, 25 backend tests, Chromium smoke test
 (start, click guess, DOM update), no browser exceptions, desktop screenshot review.
+
+## Phase 5 — Integration testing
+26 engine/word/API tests passed, plus real Chromium checks for all difficulties,
+full wins/losses, each drawing stage, click/keyboard input, duplicate requests,
+restart, lost-response recovery, expired-game recovery, active response secrecy,
+and 320px/390px layouts. No JavaScript exceptions were observed.
+A screenshot review caught controls clipped inside an overflow-hidden panel at
+320px despite no page-level overflow. Fixed shrinking grid tracks and stacked
+setup controls; added explicit control-boundary assertions and reran the browser
+suite successfully. This is a concrete challenge to discuss in the report.
+The student's local play and Chrome Developer Tools demonstration remain pending.

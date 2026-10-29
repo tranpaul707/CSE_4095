@@ -35,10 +35,10 @@ Verification: compare the plan with required components and submission criteria.
 - [x] Responsive, accessible controls; fetch the server for every game decision.
 
 ## Phase 5 — Integration and testing
-- [ ] Run engine/API tests and real browser checks for all three difficulties.
-- [ ] Verify wins, losses, new games, rendering, keyboard, and request failures.
-- [ ] Check mobile layout, duplicate input, and active response secrecy.
-- [ ] Document local commands and manual Developer Tools walkthrough.
+- [x] Run engine/API tests and real browser checks for all three difficulties.
+- [x] Verify wins, losses, new games, rendering, keyboard, and request failures.
+- [x] Check mobile layout, duplicate input, and active response secrecy.
+- [x] Document local commands and manual Developer Tools walkthrough.
 - [ ] Student: play locally and inspect one request/JSON response in Chrome.
 
 ## Phase 6 — Deployment

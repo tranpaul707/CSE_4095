@@ -42,3 +42,12 @@ A screenshot review caught controls clipped inside an overflow-hidden panel at
 setup controls; added explicit control-boundary assertions and reran the browser
 suite successfully. This is a concrete challenge to discuss in the report.
 The student's local play and Chrome Developer Tools demonstration remain pending.
+
+## Phase 6 — Deployment preparation
+Added a Render Blueprint and manual Web Service settings with rootDir hangman-web,
+Python 3.12.14, and one Gunicorn worker. The existing Netlify application cannot
+run this Flask API as a static site and its configuration was left untouched.
+Production verification: started Gunicorn on local port 5050, served the frontend,
+created and retrieved games at all difficulties, played each through to completion
+over real HTTP, and verified active secrecy and terminal reveal. All passed.
+Render account/service creation and public HTTPS verification remain pending.

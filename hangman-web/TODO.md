@@ -42,8 +42,8 @@ Verification: compare the plan with required components and submission criteria.
 - [ ] Student: play locally and inspect one request/JSON response in Chrome.
 
 ## Phase 6 — Deployment
-- [ ] Prepare dependencies, Gunicorn, and Render settings for this monorepo.
-- [ ] Verify production start command locally.
+- [x] Prepare dependencies, Gunicorn, and Render settings for this monorepo.
+- [x] Verify production start command locally.
 - [ ] Push phase commits to GitHub.
 - [ ] Create/connect hosting service and obtain public HTTPS URL.
 - [ ] Play a complete game on the public service and verify required API routes.

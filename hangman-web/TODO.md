@@ -23,10 +23,10 @@ Verification: compare the plan with required components and submission criteria.
 - [x] Verify active game serialization omits the answer.
 
 ## Phase 3 — Flask REST API
-- [ ] POST /api/games, GET /api/games/{id}, POST /api/games/{id}/guess.
-- [ ] Unique IDs, separate in-memory game states, strict JSON validation.
-- [ ] Return JSON errors and appropriate status codes.
-- [ ] Test API flows, isolation, invalid requests, and answer disclosure.
+- [x] POST /api/games, GET /api/games/{id}, POST /api/games/{id}/guess.
+- [x] Unique IDs, separate in-memory game states, strict JSON validation.
+- [x] Return JSON errors and appropriate status codes.
+- [x] Test API flows, isolation, invalid requests, and answer disclosure.
 
 ## Phase 4 — Browser interface
 - [ ] Difficulty selection, start/new game, letter buttons, and physical keyboard.

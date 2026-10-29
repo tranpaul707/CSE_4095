@@ -29,10 +29,10 @@ Verification: compare the plan with required components and submission criteria.
 - [x] Test API flows, isolation, invalid requests, and answer disclosure.
 
 ## Phase 4 — Browser interface
-- [ ] Difficulty selection, start/new game, letter buttons, and physical keyboard.
-- [ ] Pattern, guessed letters, mistakes remaining, and progressive drawing.
-- [ ] Win/loss and request error messages; restart without reload.
-- [ ] Responsive, accessible controls; fetch the server for every game decision.
+- [x] Difficulty selection, start/new game, letter buttons, and physical keyboard.
+- [x] Pattern, guessed letters, mistakes remaining, and progressive drawing.
+- [x] Win/loss and request error messages; restart without reload.
+- [x] Responsive, accessible controls; fetch the server for every game decision.
 
 ## Phase 5 — Integration and testing
 - [ ] Run engine/API tests and real browser checks for all three difficulties.

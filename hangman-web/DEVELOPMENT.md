@@ -23,3 +23,11 @@ strict JSON shapes, HTTP 201/200 success and 400/404/409/413/415 errors. Game
 requests are serialized with a lock so concurrent guesses cannot corrupt state.
 API responses use Cache-Control: no-store. Dependencies are in a local virtual
 environment and excluded from Git. Verification: 25 engine/word/API tests passed.
+
+## Phase 4 — Browser interface
+Built a responsive, self-contained HTML/CSS/JavaScript client, letter buttons and
+physical keyboard handling, six-part SVG, previous guesses, chances, and restart.
+The browser contains presentation only and re-fetches state after failed guesses
+to recover if a response was lost. Controls disable while a request is pending.
+Verification: JavaScript syntax check, 25 backend tests, Chromium smoke test
+(start, click guess, DOM update), no browser exceptions, desktop screenshot review.

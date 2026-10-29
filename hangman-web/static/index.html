@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#183e38">
+  <title>Hangman — One letter at a time</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23183e38'/%3E%3Ctext x='32' y='46' text-anchor='middle' font-size='46' fill='%23f6f3eb'%3EH%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <a class="brand" href="/" aria-label="Hangman home"><span class="brand-mark">h.</span> THE WORD CORNER</a>
+      <span class="edition">A little wordplay, a little luck.</span>
+    </header>
+    <main>
+      <section class="intro" aria-labelledby="title">
+        <p class="eyebrow">THE CLASSIC WORD GAME</p>
+        <h1 id="title">One letter <em>at a time.</em></h1>
+        <p>Find the hidden word before your six chances run out.</p>
+      </section>
+      <section class="game" aria-label="Hangman game">
+        <aside class="drawing-panel">
+          <div class="panel-heading"><span class="eyebrow">HANGMAN</span><span id="difficulty-badge" class="badge">Ready when you are</span></div>
+          <svg class="hangman" viewBox="0 0 300 300" aria-hidden="true">
+            <g class="scaffold" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M36 272 H254 M74 272 V30 H208 V66 M74 62 L106 30"/>
+            </g>
+            <g class="figure" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle data-part cx="208" cy="91" r="25" hidden/>
+              <path data-part d="M208 116 V190" hidden/>
+              <path data-part d="M208 136 L170 164" hidden/>
+              <path data-part d="M208 136 L246 164" hidden/>
+              <path data-part d="M208 190 L176 237" hidden/>
+              <path data-part d="M208 190 L240 237" hidden/>
+            </g>
+          </svg>
+          <div class="chances"><span><strong id="remaining">6</strong> <span id="chance-label">chances left</span></span><div id="lives" class="lives" aria-hidden="true"></div></div>
+          <p class="drawing-note">Every letter is a fresh possibility.</p>
+        </aside>
+        <div class="play-panel">
+          <div class="setup">
+            <fieldset id="difficulty-controls">
+              <legend class="eyebrow">PICK YOUR CHALLENGE</legend>
+              <div class="difficulty-options">
+                <label><input type="radio" name="difficulty" value="easy" checked><span>Easy</span></label>
+                <label><input type="radio" name="difficulty" value="medium"><span>Medium</span></label>
+                <label><input type="radio" name="difficulty" value="hard"><span>Hard</span></label>
+              </div>
+            </fieldset>
+            <button id="new-game" class="primary" type="button">Start game <span aria-hidden="true">↗</span></button>
+          </div>
+          <p class="setup-note">Difficulty applies to your next game. Six chances at every level.</p>
+          <div id="error" class="error" role="alert" hidden></div>
+          <div class="word-area">
+            <p id="status" class="status" role="status" aria-live="polite">Your next word awaits.</p>
+            <div id="pattern" class="pattern" role="group" aria-label="No game started"><span class="empty-word" aria-hidden="true">? ? ? ? ?</span></div>
+            <p id="message" class="message">Choose a difficulty and start a game.</p>
+          </div>
+          <div class="keyboard-heading"><span class="eyebrow">MAKE YOUR GUESS</span><span class="keyboard-hint">Your keyboard works, too</span></div>
+          <div id="keyboard" class="keyboard" role="group" aria-label="Guess a letter"></div>
+          <div class="guesses-area"><p class="eyebrow">LETTERS TRIED</p><div id="guessed" class="guessed">No letters yet.</div></div>
+        </div>
+      </section>
+      <footer class="rules"><span><b>01</b> Choose your challenge</span><span><b>02</b> Guess a letter</span><span><b>03</b> Reveal the word</span></footer>
+    </main>
+    <footer class="page-footer"><span>A classic, made for a quiet moment.</span><span>CSE 4095 · Hangman</span></footer>
+  </div>
+</body>
+</html>

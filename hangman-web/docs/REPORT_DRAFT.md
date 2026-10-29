@@ -1,6 +1,6 @@
 # Development report draft — Web-Based Hangman
 
-**Draft: deployment, student manual checks, and personal reflection are pending.**
+**Draft: live verification, student manual checks, and personal reflection are pending.**
 Revise in your own words and export the finished version as a 1–2 page PDF.
 
 ## Development process
@@ -55,9 +55,11 @@ Render configuration uses root directory hangman-web, pip installation of
 requirements.txt, and `gunicorn --bind 0.0.0.0:$PORT --workers 1 server:app`.
 A single worker is necessary because games are stored in process memory.
 
-**Complete after deployment:** public URL, deployment branch/date, actual hosting
-settings, and results of playing a complete game at the live HTTPS URL. Do not
-state that the site is deployed until it has been verified.
+The student reports deployment at https://paul-hangman.onrender.com/.
+**Complete after live verification:** deployment branch/date, actual hosting
+settings, and results of playing a complete game at that HTTPS URL. The agent
+could not independently verify the service because access was blocked from its
+environment; local test results must not be presented as live test results.
 
 ## Challenge and resolution
 

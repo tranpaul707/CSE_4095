@@ -45,7 +45,7 @@ Verification: compare the plan with required components and submission criteria.
 - [x] Prepare dependencies, Gunicorn, and Render settings for this monorepo.
 - [x] Verify production start command locally.
 - [x] Push phase commits to GitHub.
-- [ ] Create/connect hosting service and obtain public HTTPS URL.
+- [x] Create/connect hosting service and obtain public HTTPS URL (student reported).
 - [ ] Play a complete game on the public service and verify required API routes.
 
 ## Phase 7 — Submission

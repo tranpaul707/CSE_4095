@@ -105,8 +105,10 @@ Use [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for Render setup, including the
 optional Blueprint configuration. Production uses Gunicorn with exactly one
 worker because games are stored in process memory.
 
-Deployment status: configuration is prepared; no public Hangman URL is claimed
-until the service is created and verified. See [docs/SUBMISSION.md](docs/SUBMISSION.md)
+Deployment status: the student reports deployment at
+https://paul-hangman.onrender.com/. Independent live verification is pending: the
+agent environment blocks outbound access to this Render host, and the web-reading
+tool could not access it. Local tests passed; they do not establish live behavior. See [docs/SUBMISSION.md](docs/SUBMISSION.md)
 for report and recording guidance.
 
 ## Scope and limitations

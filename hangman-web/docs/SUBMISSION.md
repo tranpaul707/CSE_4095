@@ -7,7 +7,8 @@
   https://github.com/tranpaul707/CSE_4095/tree/hangman-web-app/hangman-web
 - Branch: `hangman-web-app`. If submitting before merging, clearly identify the
   branch/folder so the grader sees the app rather than an older main branch.
-- Public app: **pending Render service creation and verification**.
+- Public app: https://paul-hangman.onrender.com/
+  (student reports deployed; independent live verification pending).
 
 ## 1–2 page PDF report
 

@@ -66,3 +66,12 @@ GitHub repository. Main and the other course applications were not modified.
   browser-control tool were available in this session.
 - Finish the report with actual deployment results and personal reflection, export
   its PDF, record the demo, and submit through HuskyCT.
+
+## Reported public deployment — October 29, 2026
+The student provided https://paul-hangman.onrender.com/ and reported deployment.
+Recorded the URL and marked hosting creation complete. Independent verification
+remains pending: the execution environment proxy rejected the HTTPS CONNECT with
+403, and the web-reading tool also could not access the URL. This is a limitation
+of the available verification tools, not evidence that the service is broken.
+No live game or API verification is claimed. The student should play a complete
+game, start another, try each difficulty, and inspect active JSON in Chrome.

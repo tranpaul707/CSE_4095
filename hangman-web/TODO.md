@@ -17,10 +17,10 @@ must work without Flask. Never return the answer while status is playing.
 Verification: compare the plan with required components and submission criteria.
 
 ## Phase 2 — Game engine and word management
-- [ ] Add independent HangmanGame logic, six mistakes, validation, and end states.
-- [ ] Add Easy/Medium/Hard word lists and validated random selection.
-- [ ] Test correct, incorrect, repeated, invalid, winning, losing, and ended guesses.
-- [ ] Verify active game serialization omits the answer.
+- [x] Add independent HangmanGame logic, six mistakes, validation, and end states.
+- [x] Add Easy/Medium/Hard word lists and validated random selection.
+- [x] Test correct, incorrect, repeated, invalid, winning, losing, and ended guesses.
+- [x] Verify active game serialization omits the answer.
 
 ## Phase 3 — Flask REST API
 - [ ] POST /api/games, GET /api/games/{id}, POST /api/games/{id}/guess.
